@@ -1,7 +1,7 @@
 import type { TableConfig } from "@open-poker/engine";
 import { nanoid } from "nanoid";
 import type { Server } from "socket.io";
-import { TableRoom } from "./tableRoom.js";
+import { TableRoom, type TableSnapshot } from "./tableRoom.js";
 import type { ClientToServerEvents, ServerToClientEvents, SocketData } from "./protocol.js";
 
 type AppServer = Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
@@ -63,5 +63,19 @@ export class RoomManager {
 
   get tableCount(): number {
     return this.tables.size;
+  }
+
+  /** Снимок всех непустых столов — для сохранения между перезапусками сервера. */
+  snapshot(): TableSnapshot[] {
+    return [...this.tables.values()]
+      .map((room) => room.snapshot())
+      .filter((s) => s.seats.length > 0);
+  }
+
+  restore(snapshots: TableSnapshot[]): void {
+    for (const snapshot of snapshots) {
+      const room = TableRoom.fromSnapshot(snapshot, this.io);
+      this.tables.set(room.id, room);
+    }
   }
 }

@@ -17,6 +17,13 @@ const NEXT_HAND_DELAY_MS = 4000;
 const BOT_MIN_DELAY_MS = 700;
 const BOT_MAX_DELAY_MS = 1800;
 
+export interface TableSnapshot {
+  id: string;
+  isPublic: boolean;
+  config: TableConfig;
+  seats: { seatIndex: number; id: string; nickname: string; stack: number; isBot: boolean }[];
+}
+
 /**
  * Обёртка над чистым PokerTable: таймеры хода, боты, рассылка персонального
  * состояния каждому игроку (свои карты видны только ему) и безопасный выход
@@ -202,6 +209,37 @@ export class TableRoom {
     if (conn?.socketId) {
       this.io.to(conn.socketId).emit("table:error", { message });
     }
+  }
+
+  /**
+   * Снимок для персистентности между перезапусками сервера: только места
+   * и стеки между раздачами. Состояние текущей раздачи (карты, улица,
+   * банк) намеренно не сохраняется — при перезапуске текущая раздача
+   * просто прерывается, а следующая стартует заново с сохранёнными стеками.
+   */
+  snapshot(): TableSnapshot {
+    const seats: TableSnapshot["seats"] = [];
+    this.table.seats.forEach((seat, seatIndex) => {
+      if (!seat) return;
+      seats.push({
+        seatIndex,
+        id: seat.id,
+        nickname: seat.nickname,
+        stack: seat.stack,
+        isBot: seat.isBot,
+      });
+    });
+    return { id: this.id, isPublic: this.isPublic, config: this.table.config, seats };
+  }
+
+  static fromSnapshot(snapshot: TableSnapshot, io: AppServer): TableRoom {
+    const room = new TableRoom(snapshot.id, snapshot.config, io, snapshot.isPublic);
+    for (const seat of snapshot.seats) {
+      if (seat.stack <= 0) continue; // не восстанавливаем обнулившихся ботов/игроков
+      room.table.restoreSeat(seat.seatIndex, seat);
+      room.connections.set(seat.id, { nickname: seat.nickname, isBot: seat.isBot, socketId: null });
+    }
+    return room;
   }
 
   broadcast(): void {

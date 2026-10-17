@@ -83,6 +83,29 @@ export class PokerTable {
     return seatIndex;
   }
 
+  /**
+   * Восстанавливает игрока на конкретном месте с заданным стеком —
+   * используется при восстановлении стола после перезапуска сервера
+   * (см. backend/src/persistence.ts). Не трогает состояние текущей
+   * раздачи, вызывать только пока раздача не идёт.
+   */
+  restoreSeat(seatIndex: number, params: { id: string; nickname: string; stack: number; isBot: boolean }) {
+    if (this.seats[seatIndex] !== null) throw new Error("Место уже занято");
+    this.seats[seatIndex] = {
+      id: params.id,
+      nickname: params.nickname,
+      stack: params.stack,
+      isBot: params.isBot,
+      holeCards: [],
+      folded: false,
+      allIn: false,
+      contributedTotal: 0,
+      contributedStreet: 0,
+      sittingOut: true,
+      lastAction: undefined,
+    };
+  }
+
   standUp(playerId: string) {
     const seatIndex = this.seats.findIndex((s) => s?.id === playerId);
     if (seatIndex === -1) return;

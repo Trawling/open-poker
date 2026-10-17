@@ -4,6 +4,7 @@ import express from "express";
 import { nanoid } from "nanoid";
 import { Server, type Socket } from "socket.io";
 import { generateGuestNickname } from "./names.js";
+import { loadSnapshot, saveSnapshot } from "./persistence.js";
 import type { ClientToServerEvents, ServerToClientEvents, SocketData } from "./protocol.js";
 import { RoomManager } from "./roomManager.js";
 
@@ -101,7 +102,34 @@ io.on("connection", (socket: AppSocket) => {
 });
 
 setInterval(() => roomManager.sweepEmptyTables(), 60_000).unref();
+setInterval(() => {
+  saveSnapshot(roomManager.snapshot()).catch((err) => console.error("Не удалось сохранить снимок столов:", err));
+}, 30_000).unref();
 
-httpServer.listen(PORT, () => {
-  console.log(`Open Poker backend слушает на http://localhost:${PORT}`);
-});
+async function shutdown(signal: string) {
+  console.log(`Получен ${signal}, сохраняем состояние столов и выходим...`);
+  try {
+    await saveSnapshot(roomManager.snapshot());
+  } catch (err) {
+    console.error("Не удалось сохранить снимок при выходе:", err);
+  }
+  httpServer.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 2000).unref();
+}
+
+process.on("SIGINT", () => void shutdown("SIGINT"));
+process.on("SIGTERM", () => void shutdown("SIGTERM"));
+
+loadSnapshot()
+  .then((snapshot) => {
+    if (snapshot.length > 0) {
+      roomManager.restore(snapshot);
+      console.log(`Восстановлено столов из снимка: ${snapshot.length}`);
+    }
+  })
+  .catch((err) => console.error("Не удалось загрузить снимок столов:", err))
+  .finally(() => {
+    httpServer.listen(PORT, () => {
+      console.log(`Open Poker backend слушает на http://localhost:${PORT}`);
+    });
+  });
