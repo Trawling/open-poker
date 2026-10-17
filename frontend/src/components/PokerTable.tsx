@@ -24,7 +24,12 @@ export function PokerTable({ state }: { state: PersonalTableState }) {
         <div className="felt__street">{STREET_LABEL[state.street] ?? state.street}</div>
         <div className="felt__community">
           {Array.from({ length: 5 }).map((_, i) => (
-            <PlayingCard key={i} card={state.communityCards[i]} faceDown={false} />
+            <PlayingCard
+              key={`c${i}-${state.communityCards[i] ?? "empty"}`}
+              card={state.communityCards[i]}
+              faceDown={false}
+              empty={!state.communityCards[i]}
+            />
           ))}
         </div>
         <div className="felt__pot">Банк: {totalPot}</div>

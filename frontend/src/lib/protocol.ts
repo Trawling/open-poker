@@ -23,4 +23,4 @@ export interface ServerToClientEvents {
   "table:error": (payload: { message: string }) => void;
 }
 
-export type { ActionInput, ActionType, Card, PublicSeatView } from "@open-poker/engine";
+export type { ActionInput, ActionType, Card, LegalActions, PublicSeatView } from "@open-poker/engine";

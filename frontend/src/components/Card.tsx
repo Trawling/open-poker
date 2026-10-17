@@ -11,8 +11,22 @@ const RANK_LABEL: Record<string, string> = {
   T: "10",
 };
 
-export function PlayingCard({ card, faceDown, small }: { card?: CardType; faceDown?: boolean; small?: boolean }) {
+export function PlayingCard({
+  card,
+  faceDown,
+  small,
+  empty,
+}: {
+  card?: CardType;
+  faceDown?: boolean;
+  small?: boolean;
+  empty?: boolean;
+}) {
   const sizeClass = small ? "card card--small" : "card";
+
+  if (empty && !card) {
+    return <div className={`${sizeClass} card--empty`} aria-hidden="true" />;
+  }
 
   if (faceDown || !card) {
     return <div className={`${sizeClass} card--back`} aria-hidden="true" />;

@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { PublicSeatView } from "../lib/protocol";
+import { Avatar } from "./Avatar";
 import { PlayingCard } from "./Card";
 
 const ACTION_LABEL: Record<string, string> = {
@@ -45,11 +46,22 @@ export function Seat({
       <div className="seat__cards">
         {seat.hasHoleCards && !seat.folded ? (
           <>
-            <PlayingCard card={showFaceUp ? seat.holeCards?.[0] : undefined} faceDown={!showFaceUp} small />
-            <PlayingCard card={showFaceUp ? seat.holeCards?.[1] : undefined} faceDown={!showFaceUp} small />
+            <PlayingCard
+              key={`h0-${showFaceUp ? seat.holeCards?.[0] : "back"}`}
+              card={showFaceUp ? seat.holeCards?.[0] : undefined}
+              faceDown={!showFaceUp}
+              small
+            />
+            <PlayingCard
+              key={`h1-${showFaceUp ? seat.holeCards?.[1] : "back"}`}
+              card={showFaceUp ? seat.holeCards?.[1] : undefined}
+              faceDown={!showFaceUp}
+              small
+            />
           </>
         ) : null}
       </div>
+      <Avatar seed={seat.id} nickname={seat.nickname ?? "?"} />
       <div className="seat__info">
         <div className="seat__name-row">
           <span className="seat__name">

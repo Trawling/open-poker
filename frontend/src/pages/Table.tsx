@@ -4,6 +4,7 @@ import { PokerTable } from "../components/PokerTable";
 import { getNickname } from "../lib/identity";
 import type { ActionInput, PersonalTableState } from "../lib/protocol";
 import { getSocket } from "../lib/socket";
+import { isSoundEnabled, playActionSound, playWinSound, playYourTurnSound, setSoundEnabled } from "../lib/sound";
 
 export type TableIntent = { type: "quick" } | { type: "create" } | { type: "join"; tableId: string };
 
@@ -11,7 +12,10 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
   const [state, setState] = useState<PersonalTableState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
+  const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const startedRef = useRef(false);
+  const wasYourTurnRef = useRef(false);
+  const lastAnnouncedHandRef = useRef<number | null>(null);
 
   useEffect(() => {
     const socket = getSocket();
@@ -52,8 +56,29 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    if (!state) return;
+    const isYourTurnNow = state.actingSeatIndex !== null && state.actingSeatIndex === state.yourSeatIndex;
+    if (isYourTurnNow && !wasYourTurnRef.current) {
+      playYourTurnSound();
+    }
+    wasYourTurnRef.current = isYourTurnNow;
+
+    if (state.winners && state.winners.length > 0 && lastAnnouncedHandRef.current !== state.handNumber) {
+      lastAnnouncedHandRef.current = state.handNumber;
+      playWinSound();
+    }
+  }, [state]);
+
   function handleAction(action: ActionInput) {
+    playActionSound();
     getSocket().emit("table:action", action);
+  }
+
+  function handleToggleSound() {
+    const next = !soundOn;
+    setSoundOn(next);
+    setSoundEnabled(next);
   }
 
   function handleLeave() {
@@ -85,6 +110,9 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
           ← Выйти
         </button>
         <div className="table-page__header-right">
+          <button className="btn btn--ghost btn--small" onClick={handleToggleSound} title="Звук">
+            {soundOn ? "🔊" : "🔇"}
+          </button>
           <button className="btn btn--ghost btn--small" onClick={handleCopyLink}>
             Скопировать ссылку на стол
           </button>
