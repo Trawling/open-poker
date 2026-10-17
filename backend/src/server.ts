@@ -88,6 +88,15 @@ io.on("connection", (socket: AppSocket) => {
     room.tryStartHand();
   });
 
+  socket.on("table:rebuy", () => {
+    const room = socket.data.tableId ? roomManager.get(socket.data.tableId) : undefined;
+    if (!room) {
+      socket.emit("table:error", { message: "Вы не за столом." });
+      return;
+    }
+    room.rebuy(guestId);
+  });
+
   socket.on("table:leave", () => {
     const room = socket.data.tableId ? roomManager.get(socket.data.tableId) : undefined;
     room?.leave(guestId);

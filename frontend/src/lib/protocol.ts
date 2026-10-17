@@ -30,6 +30,7 @@ export interface ClientToServerEvents {
   "table:join": (payload: { tableId: string; nickname?: string }) => void;
   "table:action": (payload: ActionInput) => void;
   "table:add-bot": () => void;
+  "table:rebuy": () => void;
   "table:leave": () => void;
 }
 

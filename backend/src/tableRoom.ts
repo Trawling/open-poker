@@ -82,6 +82,18 @@ export class TableRoom {
     return seatIndex;
   }
 
+  /** Докупка фишек для игрока, у которого их не осталось — см. PokerTable.rebuy. */
+  rebuy(playerId: string): void {
+    try {
+      this.table.rebuy(playerId, this.table.config.startingStack);
+    } catch (err) {
+      this.emitError(playerId, err instanceof Error ? err.message : "Докупка недоступна");
+      return;
+    }
+    this.broadcast();
+    this.tryStartHand();
+  }
+
   addBot(): void {
     if (!this.hasFreeSeat()) return;
     const usedNames = new Set([...this.connections.values()].map((c) => c.nickname));

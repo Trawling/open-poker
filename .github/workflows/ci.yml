@@ -42,6 +42,7 @@ jobs:
             sleep 0.5
           done
           node scripts/smoke-test.mjs
+          node scripts/rebuy-test.mjs
           kill $BACKEND_PID
 
       - name: Тест персистентности (реальный рестарт backend)

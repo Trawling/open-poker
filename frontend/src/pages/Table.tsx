@@ -92,6 +92,10 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
     getSocket().emit("table:add-bot");
   }
 
+  function handleRebuy() {
+    getSocket().emit("table:rebuy");
+  }
+
   function handleCopyLink() {
     navigator.clipboard?.writeText(window.location.href).catch(() => undefined);
   }
@@ -103,6 +107,8 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
   const secondsLeft = state.turnDeadline ? Math.max(0, Math.ceil((state.turnDeadline - now) / 1000)) : null;
   const isYourTurn = state.actingSeatIndex !== null && state.actingSeatIndex === state.yourSeatIndex;
   const totalPot = state.pots.reduce((sum, p) => sum + p.amount, 0);
+  const mySeat = state.seats.find((s) => s.seatIndex === state.yourSeatIndex) ?? null;
+  const canRebuy = !!mySeat && mySeat.stack < state.config.bigBlind;
 
   return (
     <div className="table-page">
@@ -131,7 +137,16 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
         <div className="turn-timer">Осталось {secondsLeft} с на ход</div>
       )}
 
-      <ActionBar legalActions={state.yourLegalActions} potSize={totalPot} onAction={handleAction} />
+      {canRebuy ? (
+        <div className="rebuy-banner">
+          <p>Фишки закончились — это не страшно, они виртуальные и бесплатные.</p>
+          <button className="btn btn--primary btn--big" onClick={handleRebuy}>
+            Докупить {state.config.startingStack} фишек
+          </button>
+        </div>
+      ) : (
+        <ActionBar legalActions={state.yourLegalActions} potSize={totalPot} onAction={handleAction} />
+      )}
 
       <HandHistory hands={state.recentHands} />
       <FairnessFooter state={state} />

@@ -130,4 +130,26 @@ describe("PokerTable — героям по-честному", () => {
     expect(table.handInProgress).toBe(false);
     expect(totalChips(table)).toBe(chipsBefore);
   });
+
+  it("докупка возвращает выбывшего игрока в игру", () => {
+    const table = new PokerTable(makeConfig({ maxSeats: 2 }));
+    table.sitDown({ id: "a", nickname: "A" });
+    table.sitDown({ id: "b", nickname: "B" });
+    table.seats[0]!.stack = 0; // представим, что игрок уже проигрался в прошлой раздаче
+
+    expect(table.canStartHand()).toBe(false); // только один участник с фишками
+
+    table.rebuy("a", 1000);
+
+    expect(table.canStartHand()).toBe(true);
+    table.startHand();
+    expect(table.seats[0]!.sittingOut).toBe(false);
+    expect(table.seats[0]!.stack).toBeGreaterThan(0);
+  });
+
+  it("не даёт докупиться, пока фишек ещё достаточно для игры", () => {
+    const table = new PokerTable(makeConfig());
+    table.sitDown({ id: "a", nickname: "A" });
+    expect(() => table.rebuy("a", 1000)).toThrow();
+  });
 });

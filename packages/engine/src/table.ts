@@ -106,6 +106,25 @@ export class PokerTable {
     };
   }
 
+  /**
+   * Докупка фишек. Без этого игрок, проигравший весь стек, навечно
+   * застревает за столом с 0 фишками — это прямое нарушение принципа
+   * "без гемора". Safe вызывать в любой момент (даже во время чужой
+   * активной раздачи): севший за стол с 0 фишками игрок уже помечен
+   * sittingOut и не участвует в текущей раздаче, рубай влияет только
+   * на следующую.
+   */
+  rebuy(playerId: string, stack: number): void {
+    const seatIndex = this.seats.findIndex((s) => s?.id === playerId);
+    if (seatIndex === -1) throw new Error("Игрок не за этим столом");
+    const seat = this.seats[seatIndex]!;
+    if (seat.stack >= this.config.bigBlind) {
+      throw new Error("Докупка доступна только когда фишек недостаточно для игры");
+    }
+    seat.stack = stack;
+    seat.sittingOut = false;
+  }
+
   standUp(playerId: string) {
     const seatIndex = this.seats.findIndex((s) => s?.id === playerId);
     if (seatIndex === -1) return;
