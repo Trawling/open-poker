@@ -543,6 +543,53 @@ button {
   border-radius: 4px;
 }
 
+/* ---------- История раздач ---------- */
+
+.history {
+  font-size: 12px;
+  color: var(--text-dim);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+}
+
+.history__list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.history__item {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.history__header {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.history__pot {
+  color: var(--accent);
+  font-weight: 400;
+}
+
+.history__cards {
+  display: flex;
+  gap: 2px;
+  margin: 4px 0;
+}
+
+.history__winners {
+  color: var(--text-dim);
+}
+
 @media (max-width: 480px) {
   .seat {
     min-width: 90px;

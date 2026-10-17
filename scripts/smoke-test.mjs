@@ -61,8 +61,13 @@ async function run() {
     new Promise((_, reject) => setTimeout(() => reject(new Error("таймаут: раздача не завершилась за 20с")), 20000)),
   ]);
 
+  if (!finalState.recentHands || finalState.recentHands.length === 0) {
+    throw new Error("история раздач пуста после завершения раздачи");
+  }
+
   console.log("✅ Smoke-тест пройден: раздача разыграна от начала до конца");
   console.log("Банк:", finalState.pots);
+  console.log("История раздач:", finalState.recentHands.length, "запись(и)");
   alice.close();
   bob.close();
   process.exit(0);

@@ -3,9 +3,25 @@
 // переиспользуются напрямую из @open-poker/engine, чтобы не дублировать их.
 import type { ActionInput, LegalActions, PublicTableState } from "@open-poker/engine";
 
+export interface HandHistoryWinner {
+  seatIndex: number;
+  nickname: string;
+  amount: number;
+  handDescription?: string;
+}
+
+export interface HandHistoryEntry {
+  handNumber: number;
+  timestamp: number;
+  communityCards: string[];
+  potTotal: number;
+  winners: HandHistoryWinner[];
+}
+
 export interface PersonalTableState extends PublicTableState {
   yourLegalActions: LegalActions | null;
   yourSeatIndex: number | null;
+  recentHands: HandHistoryEntry[];
 }
 
 export interface ClientToServerEvents {

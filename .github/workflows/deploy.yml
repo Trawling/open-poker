@@ -1,0 +1,49 @@
+name: Deploy
+
+# Срабатывает только после зелёного CI на main. Сам деплой выполняется
+# по SSH на ваш VPS командой `docker compose up --build -d`.
+#
+# Чтобы включить: добавьте в Settings → Secrets and variables → Actions
+# репозитория три секрета:
+#   DEPLOY_HOST — адрес сервера (IP или домен)
+#   DEPLOY_USER — пользователь SSH (например, deploy)
+#   DEPLOY_SSH_KEY — приватный ключ SSH с доступом на сервер
+# и переменную (Variables) DEPLOY_PATH — путь к склонированному репозиторию
+# на сервере (например, /home/deploy/open-poker).
+#
+# Пока секреты не добавлены, джоб просто завершится с понятным сообщением
+# и ничего не сломает — это безопасный "заготовленный" workflow.
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверка, настроен ли деплой
+        id: check
+        run: |
+          if [ -z "${{ secrets.DEPLOY_HOST }}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::DEPLOY_HOST не задан — пропускаем деплой. См. docs/04-deploy.md и шапку этого файла."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Деплой по SSH
+        if: steps.check.outputs.configured == 'true'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ${{ vars.DEPLOY_PATH }}
+            git pull origin main
+            docker compose up --build -d
+            docker image prune -f

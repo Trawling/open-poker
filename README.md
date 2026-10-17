@@ -1,5 +1,8 @@
 # Open Poker — открытый покер-сервис в духе Lichess
 
+[![CI](https://github.com/Trawling/open-poker/actions/workflows/ci.yml/badge.svg)](https://github.com/Trawling/open-poker/actions/workflows/ci.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+
 Идея: бесплатный, без рекламы, open-source сервис для игры в покер (Texas Hold'em в первую очередь),
 максимально минималистичный и понятный — зашёл и сразу играешь, без регистрации, доната и шума.
 

@@ -3,7 +3,12 @@ import type { ActionInput, TableConfig } from "@open-poker/engine";
 import type { Server } from "socket.io";
 import { decideBotAction } from "./bot.js";
 import { generateBotNickname } from "./names.js";
-import type { ClientToServerEvents, ServerToClientEvents, SocketData } from "./protocol.js";
+import type {
+  ClientToServerEvents,
+  HandHistoryEntry,
+  ServerToClientEvents,
+  SocketData,
+} from "./protocol.js";
 
 type AppServer = Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
 
@@ -16,6 +21,7 @@ interface Connection {
 const NEXT_HAND_DELAY_MS = 4000;
 const BOT_MIN_DELAY_MS = 700;
 const BOT_MAX_DELAY_MS = 1800;
+const MAX_HAND_HISTORY = 20;
 
 export interface TableSnapshot {
   id: string;
@@ -38,6 +44,12 @@ export class TableRoom {
   private readonly pendingLeaves = new Set<string>();
   private turnTimer: NodeJS.Timeout | null = null;
   private nextHandTimer: NodeJS.Timeout | null = null;
+  /**
+   * Последние завершённые раздачи — только для показа в интерфейсе
+   * («история раздач»), не переживает перезапуск сервера (в отличие от
+   * стеков, которые сохраняются через TableRoom.snapshot).
+   */
+  private handHistory: HandHistoryEntry[] = [];
 
   constructor(id: string, config: TableConfig, io: AppServer, isPublic: boolean) {
     this.id = id;
@@ -141,18 +153,46 @@ export class TableRoom {
       this.scheduleNextActor();
       return;
     }
-    this.broadcast();
     this.afterAction();
   }
 
+  /**
+   * Единая точка после любого действия (человека, бота, автофолда по
+   * таймеру): сначала фиксируем историю (если раздача завершилась),
+   * потом рассылаем состояние — иначе клиенты получают события в
+   * неверном порядке (например, победителей без свежей записи в истории).
+   */
   private afterAction(): void {
     if (!this.table.handInProgress) {
+      this.recordHandHistory();
       this.processPendingLeaves();
       this.broadcast();
       this.scheduleAutoStart();
       return;
     }
+    this.broadcast();
     this.scheduleNextActor();
+  }
+
+  private recordHandHistory(): void {
+    const winners = this.table.winners;
+    if (!winners || winners.length === 0) return;
+    const entry: HandHistoryEntry = {
+      handNumber: this.table.handNumber,
+      timestamp: Date.now(),
+      communityCards: [...this.table.communityCards],
+      potTotal: winners.reduce((sum, w) => sum + w.amount, 0),
+      winners: winners.map((w) => ({
+        seatIndex: w.seatIndex,
+        nickname: this.table.seats[w.seatIndex]?.nickname ?? "?",
+        amount: w.amount,
+        handDescription: w.handDescription,
+      })),
+    };
+    this.handHistory.unshift(entry);
+    if (this.handHistory.length > MAX_HAND_HISTORY) {
+      this.handHistory.length = MAX_HAND_HISTORY;
+    }
   }
 
   private scheduleNextActor(): void {
@@ -184,7 +224,6 @@ export class TableRoom {
       } catch {
         // ход уже невозможен — раздача продвинулась иначе, просто игнорируем
       }
-      this.broadcast();
       this.afterAction();
     }, this.table.config.turnTimeMs);
   }
@@ -200,7 +239,6 @@ export class TableRoom {
         // раздача уже закрылась иначе — ничего не делаем
       }
     }
-    this.broadcast();
     this.afterAction();
   }
 
@@ -251,6 +289,7 @@ export class TableRoom {
         ...state,
         yourSeatIndex: seatIndex === -1 ? null : seatIndex,
         yourLegalActions: this.table.handInProgress ? this.table.getLegalActions(playerId) : null,
+        recentHands: this.handHistory,
       });
     }
   }

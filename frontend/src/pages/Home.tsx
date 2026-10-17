@@ -49,7 +49,7 @@ export function Home({
       </div>
 
       <footer className="home__footer">
-        <a href="https://github.com" target="_blank" rel="noreferrer">
+        <a href="https://github.com/Trawling/open-poker" target="_blank" rel="noreferrer">
           Исходный код на GitHub
         </a>
         <span>·</span>

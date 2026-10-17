@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ActionBar } from "../components/ActionBar";
+import { HandHistory } from "../components/HandHistory";
 import { PokerTable } from "../components/PokerTable";
 import { getNickname } from "../lib/identity";
 import type { ActionInput, PersonalTableState } from "../lib/protocol";
@@ -132,6 +133,7 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
 
       <ActionBar legalActions={state.yourLegalActions} potSize={totalPot} onAction={handleAction} />
 
+      <HandHistory hands={state.recentHands} />
       <FairnessFooter state={state} />
     </div>
   );
