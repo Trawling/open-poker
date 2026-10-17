@@ -10,7 +10,17 @@ const ACTION_LABEL: Record<string, string> = {
   raise: "Рейз",
 };
 
-export function Seat({ seat, isYou, style }: { seat: PublicSeatView; isYou: boolean; style?: CSSProperties }) {
+export function Seat({
+  seat,
+  isYou,
+  isWinner,
+  style,
+}: {
+  seat: PublicSeatView;
+  isYou: boolean;
+  isWinner?: boolean;
+  style?: CSSProperties;
+}) {
   if (!seat.id) {
     return (
       <div className="seat seat--empty" style={style}>
@@ -28,6 +38,7 @@ export function Seat({ seat, isYou, style }: { seat: PublicSeatView; isYou: bool
         seat.isActing ? "seat--active" : "",
         seat.folded ? "seat--folded" : "",
         seat.sittingOut ? "seat--sitting-out" : "",
+        isWinner ? "seat--winner" : "",
       ].join(" ")}
       style={style}
     >

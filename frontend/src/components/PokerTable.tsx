@@ -16,6 +16,7 @@ export function PokerTable({ state }: { state: PersonalTableState }) {
   const youIndex = state.yourSeatIndex ?? 0;
 
   const totalPot = state.pots.reduce((sum, p) => sum + p.amount, 0);
+  const winnerSeatIndexes = new Set((state.winners ?? []).map((w) => w.seatIndex));
 
   return (
     <div className="felt">
@@ -55,6 +56,7 @@ export function PokerTable({ state }: { state: PersonalTableState }) {
             key={seat.seatIndex}
             seat={seat}
             isYou={seat.seatIndex === state.yourSeatIndex}
+            isWinner={winnerSeatIndexes.has(seat.seatIndex)}
             style={style}
           />
         );
