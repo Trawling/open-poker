@@ -61,3 +61,5 @@ docker compose up --build
 
 Хотите помочь — см. `CONTRIBUTING.md`: как запустить, что неизменно
 (без реальных денег, без рекламы), и честный список открытых задач.
+Конкретные задачи с метками `good first issue` / `help wanted` — во
+[вкладке Issues](https://github.com/Trawling/open-poker/issues).
