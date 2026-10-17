@@ -54,15 +54,15 @@ io.on("connection", (socket: AppSocket) => {
     room.tryStartHand();
   }
 
-  socket.on("table:quick-play", ({ nickname: nick } = {}) => {
+  socket.on("table:quick-play", ({ nickname: nick, stakes } = {}) => {
     if (nick) socket.data.nickname = sanitizeNickname(nick);
-    const room = roomManager.findOrCreateQuickTable();
+    const room = roomManager.findOrCreateQuickTable(stakes);
     joinRoom(room.id);
   });
 
-  socket.on("table:create", ({ nickname: nick } = {}) => {
+  socket.on("table:create", ({ nickname: nick, stakes } = {}) => {
     if (nick) socket.data.nickname = sanitizeNickname(nick);
-    const room = roomManager.createPrivateTable();
+    const room = roomManager.createPrivateTable(stakes);
     joinRoom(room.id);
   });
 

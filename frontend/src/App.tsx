@@ -23,13 +23,13 @@ export function App() {
 
   return (
     <Home
-      onQuickPlay={(nickname) => {
+      onQuickPlay={(nickname, stakes) => {
         setNickname(nickname.trim());
-        setIntent({ type: "quick" });
+        setIntent({ type: "quick", stakes });
       }}
-      onCreateTable={(nickname) => {
+      onCreateTable={(nickname, stakes) => {
         setNickname(nickname.trim());
-        setIntent({ type: "create" });
+        setIntent({ type: "create", stakes });
       }}
     />
   );

@@ -48,6 +48,7 @@ npm run dev
 Прогнать сквозной smoke-тест (нужен запущенный backend): `node scripts/smoke-test.mjs`
 Проверить, что стеки переживают перезапуск сервера: `node scripts/persistence-test.mjs`
 Проверить докупку фишек после обнуления стека: `node scripts/rebuy-test.mjs`
+Проверить разделение столов по ставкам: `node scripts/stakes-test.mjs`
 
 ## Деплой на сервер
 

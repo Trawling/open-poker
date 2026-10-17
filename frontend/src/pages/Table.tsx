@@ -7,7 +7,10 @@ import type { ActionInput, PersonalTableState } from "../lib/protocol";
 import { getSocket } from "../lib/socket";
 import { isSoundEnabled, playActionSound, playWinSound, playYourTurnSound, setSoundEnabled } from "../lib/sound";
 
-export type TableIntent = { type: "quick" } | { type: "create" } | { type: "join"; tableId: string };
+export type TableIntent =
+  | { type: "quick"; stakes: string }
+  | { type: "create"; stakes: string }
+  | { type: "join"; tableId: string };
 
 export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () => void }) {
   const [state, setState] = useState<PersonalTableState | null>(null);
@@ -39,8 +42,8 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
 
     if (!startedRef.current) {
       startedRef.current = true;
-      if (intent.type === "quick") socket.emit("table:quick-play", { nickname });
-      else if (intent.type === "create") socket.emit("table:create", { nickname });
+      if (intent.type === "quick") socket.emit("table:quick-play", { nickname, stakes: intent.stakes });
+      else if (intent.type === "create") socket.emit("table:create", { nickname, stakes: intent.stakes });
       else socket.emit("table:join", { tableId: intent.tableId, nickname });
     }
 

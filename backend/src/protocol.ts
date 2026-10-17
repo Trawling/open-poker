@@ -25,8 +25,8 @@ export interface PersonalTableState extends PublicTableState {
 
 /** События, которые клиент отправляет серверу. */
 export interface ClientToServerEvents {
-  "table:quick-play": (payload: { nickname?: string }) => void;
-  "table:create": (payload: { nickname?: string }) => void;
+  "table:quick-play": (payload: { nickname?: string; stakes?: string }) => void;
+  "table:create": (payload: { nickname?: string; stakes?: string }) => void;
   "table:join": (payload: { tableId: string; nickname?: string }) => void;
   "table:action": (payload: ActionInput) => void;
   "table:add-bot": () => void;

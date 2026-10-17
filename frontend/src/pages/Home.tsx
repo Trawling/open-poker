@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { IdentityPanel } from "../components/IdentityPanel";
 import { getNickname, setNickname } from "../lib/identity";
+import { DEFAULT_STAKES_ID, STAKES_LEVELS } from "../lib/stakes";
 
 export function Home({
   onQuickPlay,
   onCreateTable,
 }: {
-  onQuickPlay: (nickname: string) => void;
-  onCreateTable: (nickname: string) => void;
+  onQuickPlay: (nickname: string, stakes: string) => void;
+  onCreateTable: (nickname: string, stakes: string) => void;
 }) {
   const [nickname, setNicknameInput] = useState(getNickname());
+  const [stakes, setStakes] = useState(DEFAULT_STAKES_ID);
 
   function handleNicknameBlur() {
     setNickname(nickname.trim());
@@ -32,11 +34,30 @@ export function Home({
           onBlur={handleNicknameBlur}
         />
 
+        <div className="home__stakes">
+          <span className="home__stakes-label">Ставки:</span>
+          <div className="home__stakes-options">
+            {STAKES_LEVELS.map((level) => (
+              <button
+                key={level.id}
+                className={`chip ${stakes === level.id ? "chip--active" : ""}`}
+                onClick={() => setStakes(level.id)}
+                type="button"
+              >
+                {level.label}
+              </button>
+            ))}
+          </div>
+          <span className="home__stakes-hint">
+            Это просто разные "режимы" — фишки в любом случае виртуальные и бесплатные.
+          </span>
+        </div>
+
         <div className="home__actions">
-          <button className="btn btn--primary btn--big" onClick={() => onQuickPlay(nickname)}>
+          <button className="btn btn--primary btn--big" onClick={() => onQuickPlay(nickname, stakes)}>
             Быстрая игра
           </button>
-          <button className="btn btn--big" onClick={() => onCreateTable(nickname)}>
+          <button className="btn btn--big" onClick={() => onCreateTable(nickname, stakes)}>
             Создать стол для друзей
           </button>
         </div>
