@@ -35,6 +35,10 @@ export function App() {
         setNickname(nickname.trim());
         setIntent({ type: "tournament" });
       }}
+      onCreateTournament={(nickname) => {
+        setNickname(nickname.trim());
+        setIntent({ type: "create-tournament" });
+      }}
     />
   );
 }

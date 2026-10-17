@@ -58,6 +58,19 @@ export class RoomManager {
     return room;
   }
 
+  /**
+   * Приватный турнир по ссылке — в отличие от быстрого турнира, ботами
+   * автоматически НЕ добирается: это стол для конкретной компании друзей,
+   * которые сами решают, когда начинать (и могут вручную добавить ботов
+   * через уже существующую кнопку "+ Добавить бота", если кого-то не хватает).
+   */
+  createPrivateTournament(): TableRoom {
+    const id = nanoid(8);
+    const room = new TableRoom(id, buildTournamentConfig(id), this.io, false, true);
+    this.tables.set(id, room);
+    return room;
+  }
+
   findOrCreateQuickTable(stakesId?: string): TableRoom {
     const stakes = resolveStakes(stakesId);
     for (const room of this.tables.values()) {

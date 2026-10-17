@@ -50,6 +50,7 @@ npm run dev
 Проверить докупку фишек после обнуления стека: `node scripts/rebuy-test.mjs`
 Проверить разделение столов по ставкам: `node scripts/stakes-test.mjs`
 Проверить турнирный режим целиком (может занять несколько минут): `node scripts/tournament-test.mjs`
+Проверить статистику и приватные турниры: `node scripts/stats-test.mjs`
 
 ## Деплой на сервер
 

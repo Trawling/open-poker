@@ -11,6 +11,7 @@ export type TableIntent =
   | { type: "quick"; stakes: string }
   | { type: "create"; stakes: string }
   | { type: "tournament" }
+  | { type: "create-tournament" }
   | { type: "join"; tableId: string };
 
 export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () => void }) {
@@ -46,6 +47,7 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
       if (intent.type === "quick") socket.emit("table:quick-play", { nickname, stakes: intent.stakes });
       else if (intent.type === "create") socket.emit("table:create", { nickname, stakes: intent.stakes });
       else if (intent.type === "tournament") socket.emit("table:quick-tournament", { nickname });
+      else if (intent.type === "create-tournament") socket.emit("table:create-tournament", { nickname });
       else socket.emit("table:join", { tableId: intent.tableId, nickname });
     }
 

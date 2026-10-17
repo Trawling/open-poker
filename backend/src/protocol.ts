@@ -37,6 +37,7 @@ export interface ClientToServerEvents {
   "table:quick-play": (payload: { nickname?: string; stakes?: string }) => void;
   "table:create": (payload: { nickname?: string; stakes?: string }) => void;
   "table:quick-tournament": (payload: { nickname?: string }) => void;
+  "table:create-tournament": (payload: { nickname?: string }) => void;
   "table:join": (payload: { tableId: string; nickname?: string }) => void;
   "table:action": (payload: ActionInput) => void;
   "table:add-bot": () => void;

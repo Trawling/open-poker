@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { IdentityPanel } from "../components/IdentityPanel";
+import { StatsPanel } from "../components/StatsPanel";
 import { getNickname, setNickname } from "../lib/identity";
 import { DEFAULT_STAKES_ID, STAKES_LEVELS } from "../lib/stakes";
 
@@ -7,10 +8,12 @@ export function Home({
   onQuickPlay,
   onCreateTable,
   onQuickTournament,
+  onCreateTournament,
 }: {
   onQuickPlay: (nickname: string, stakes: string) => void;
   onCreateTable: (nickname: string, stakes: string) => void;
   onQuickTournament: (nickname: string) => void;
+  onCreateTournament: (nickname: string) => void;
 }) {
   const [nickname, setNicknameInput] = useState(getNickname());
   const [stakes, setStakes] = useState(DEFAULT_STAKES_ID);
@@ -36,42 +39,53 @@ export function Home({
           onBlur={handleNicknameBlur}
         />
 
-        <div className="home__stakes">
-          <span className="home__stakes-label">Ставки:</span>
-          <div className="home__stakes-options">
-            {STAKES_LEVELS.map((level) => (
-              <button
-                key={level.id}
-                className={`chip ${stakes === level.id ? "chip--active" : ""}`}
-                onClick={() => setStakes(level.id)}
-                type="button"
-              >
-                {level.label}
-              </button>
-            ))}
+        <section className="home__section">
+          <h2 className="home__section-title">Кэш-игра</h2>
+          <div className="home__stakes">
+            <div className="home__stakes-options">
+              {STAKES_LEVELS.map((level) => (
+                <button
+                  key={level.id}
+                  className={`chip ${stakes === level.id ? "chip--active" : ""}`}
+                  onClick={() => setStakes(level.id)}
+                  type="button"
+                >
+                  {level.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <span className="home__stakes-hint">
-            Это просто разные "режимы" — фишки в любом случае виртуальные и бесплатные.
-          </span>
-        </div>
+          <div className="home__actions">
+            <button className="btn btn--primary btn--big" onClick={() => onQuickPlay(nickname, stakes)}>
+              Быстрая игра
+            </button>
+            <button className="btn btn--big" onClick={() => onCreateTable(nickname, stakes)}>
+              Создать стол для друзей
+            </button>
+          </div>
+        </section>
 
-        <div className="home__actions">
-          <button className="btn btn--primary btn--big" onClick={() => onQuickPlay(nickname, stakes)}>
-            Быстрая игра
-          </button>
-          <button className="btn btn--big" onClick={() => onCreateTable(nickname, stakes)}>
-            Создать стол для друзей
-          </button>
-          <button className="btn btn--big" onClick={() => onQuickTournament(nickname)}>
-            🏆 Турнир (без докупки, блайнды растут)
-          </button>
-        </div>
+        <section className="home__section">
+          <h2 className="home__section-title">🏆 Турнир</h2>
+          <p className="home__section-hint">Без докупки, блайнды растут — игра до последнего.</p>
+          <div className="home__actions">
+            <button className="btn btn--big" onClick={() => onQuickTournament(nickname)}>
+              Быстрый турнир
+            </button>
+            <button className="btn btn--big" onClick={() => onCreateTournament(nickname)}>
+              Турнир для друзей
+            </button>
+          </div>
+        </section>
 
         <p className="home__note">
           Без регистрации. Фишки виртуальные и ничего не стоят — это просто игра.
         </p>
 
-        <IdentityPanel />
+        <div className="home__meta-row">
+          <StatsPanel />
+          <IdentityPanel />
+        </div>
       </div>
 
       <footer className="home__footer">

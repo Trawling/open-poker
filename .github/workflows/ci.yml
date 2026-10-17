@@ -44,6 +44,7 @@ jobs:
           node scripts/smoke-test.mjs
           node scripts/rebuy-test.mjs
           node scripts/stakes-test.mjs
+          node scripts/stats-test.mjs
           kill $BACKEND_PID
 
       - name: Тест персистентности (реальный рестарт backend)

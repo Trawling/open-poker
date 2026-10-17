@@ -1,9 +1,11 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import type { PlayerStats } from "./stats.js";
 import type { TableSnapshot } from "./tableRoom.js";
 
 const DATA_DIR = process.env.DATA_DIR ?? path.resolve(process.cwd(), "data");
 const SNAPSHOT_PATH = path.join(DATA_DIR, "tables.json");
+const STATS_PATH = path.join(DATA_DIR, "stats.json");
 
 /**
  * Намеренно простая персистентность: раз в N секунд и при аккуратном
@@ -24,4 +26,18 @@ export async function loadSnapshot(): Promise<TableSnapshot[]> {
 export async function saveSnapshot(snapshot: TableSnapshot[]): Promise<void> {
   await mkdir(DATA_DIR, { recursive: true });
   await writeFile(SNAPSHOT_PATH, JSON.stringify(snapshot, null, 2), "utf-8");
+}
+
+export async function loadStats(): Promise<Record<string, PlayerStats>> {
+  try {
+    const raw = await readFile(STATS_PATH, "utf-8");
+    return JSON.parse(raw) as Record<string, PlayerStats>;
+  } catch {
+    return {};
+  }
+}
+
+export async function saveStats(stats: Record<string, PlayerStats>): Promise<void> {
+  await mkdir(DATA_DIR, { recursive: true });
+  await writeFile(STATS_PATH, JSON.stringify(stats, null, 2), "utf-8");
 }

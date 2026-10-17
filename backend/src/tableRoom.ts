@@ -10,6 +10,7 @@ import type {
   SocketData,
   TournamentWinner,
 } from "./protocol.js";
+import { statsStore } from "./stats.js";
 import { blindLevelForHand } from "./tournament.js";
 
 type AppServer = Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
@@ -214,10 +215,19 @@ export class TableRoom {
     if (winnerSeatIndex === undefined) return false;
     const seat = this.table.seats[winnerSeatIndex]!;
     this.tournamentWinner = { playerId: seat.id, nickname: seat.nickname };
+
+    for (const [playerId, conn] of this.connections.entries()) {
+      if (conn.isBot) continue;
+      statsStore.recordTournamentPlayed(playerId, conn.nickname);
+    }
+    if (!seat.isBot) {
+      statsStore.recordTournamentWon(seat.id, seat.nickname);
+    }
     return true;
   }
 
   private recordHandHistory(): void {
+    this.updateHandStats();
     const winners = this.table.winners;
     if (!winners || winners.length === 0) return;
     const entry: HandHistoryEntry = {
@@ -235,6 +245,22 @@ export class TableRoom {
     this.handHistory.unshift(entry);
     if (this.handHistory.length > MAX_HAND_HISTORY) {
       this.handHistory.length = MAX_HAND_HISTORY;
+    }
+  }
+
+  /** Обновляет статистику игроков (не ботов) по только что завершённой раздаче. */
+  private updateHandStats(): void {
+    for (const seatIndex of this.table.occupiedSeats()) {
+      const seat = this.table.seats[seatIndex];
+      // sittingOut здесь ещё отражает участие именно в только что завершённой
+      // раздаче — сбрасывается только на следующем startHand().
+      if (!seat || seat.isBot || seat.sittingOut) continue;
+      statsStore.recordHandPlayed(seat.id, seat.nickname);
+    }
+    for (const winner of this.table.winners ?? []) {
+      const seat = this.table.seats[winner.seatIndex];
+      if (!seat || seat.isBot) continue;
+      statsStore.recordHandWon(seat.id, seat.nickname, winner.amount);
     }
   }
 
