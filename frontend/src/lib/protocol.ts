@@ -18,15 +18,23 @@ export interface HandHistoryEntry {
   winners: HandHistoryWinner[];
 }
 
+export interface TournamentWinner {
+  playerId: string;
+  nickname: string;
+}
+
 export interface PersonalTableState extends PublicTableState {
   yourLegalActions: LegalActions | null;
   yourSeatIndex: number | null;
   recentHands: HandHistoryEntry[];
+  isTournament: boolean;
+  tournamentWinner: TournamentWinner | null;
 }
 
 export interface ClientToServerEvents {
   "table:quick-play": (payload: { nickname?: string; stakes?: string }) => void;
   "table:create": (payload: { nickname?: string; stakes?: string }) => void;
+  "table:quick-tournament": (payload: { nickname?: string }) => void;
   "table:join": (payload: { tableId: string; nickname?: string }) => void;
   "table:action": (payload: ActionInput) => void;
   "table:add-bot": () => void;

@@ -66,6 +66,12 @@ io.on("connection", (socket: AppSocket) => {
     joinRoom(room.id);
   });
 
+  socket.on("table:quick-tournament", ({ nickname: nick } = {}) => {
+    if (nick) socket.data.nickname = sanitizeNickname(nick);
+    const room = roomManager.findOrCreateQuickTournament();
+    joinRoom(room.id);
+  });
+
   socket.on("table:join", ({ tableId, nickname: nick }) => {
     if (nick) socket.data.nickname = sanitizeNickname(nick);
     joinRoom(tableId);

@@ -258,6 +258,11 @@ button {
   gap: 8px;
 }
 
+.table-page__blinds {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
 .turn-timer {
   text-align: center;
   color: var(--accent);
@@ -534,6 +539,15 @@ button {
 .rebuy-banner p {
   margin: 0;
   color: var(--text-dim);
+}
+
+.rebuy-banner--gold {
+  border-color: #f4c04f;
+}
+
+.rebuy-banner--gold p {
+  color: var(--text);
+  font-size: 16px;
 }
 
 .action-bar--idle {

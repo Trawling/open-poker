@@ -49,6 +49,7 @@ npm run dev
 Проверить, что стеки переживают перезапуск сервера: `node scripts/persistence-test.mjs`
 Проверить докупку фишек после обнуления стека: `node scripts/rebuy-test.mjs`
 Проверить разделение столов по ставкам: `node scripts/stakes-test.mjs`
+Проверить турнирный режим целиком (может занять несколько минут): `node scripts/tournament-test.mjs`
 
 ## Деплой на сервер
 

@@ -10,6 +10,7 @@ import { isSoundEnabled, playActionSound, playWinSound, playYourTurnSound, setSo
 export type TableIntent =
   | { type: "quick"; stakes: string }
   | { type: "create"; stakes: string }
+  | { type: "tournament" }
   | { type: "join"; tableId: string };
 
 export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () => void }) {
@@ -44,6 +45,7 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
       startedRef.current = true;
       if (intent.type === "quick") socket.emit("table:quick-play", { nickname, stakes: intent.stakes });
       else if (intent.type === "create") socket.emit("table:create", { nickname, stakes: intent.stakes });
+      else if (intent.type === "tournament") socket.emit("table:quick-tournament", { nickname });
       else socket.emit("table:join", { tableId: intent.tableId, nickname });
     }
 
@@ -111,7 +113,9 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
   const isYourTurn = state.actingSeatIndex !== null && state.actingSeatIndex === state.yourSeatIndex;
   const totalPot = state.pots.reduce((sum, p) => sum + p.amount, 0);
   const mySeat = state.seats.find((s) => s.seatIndex === state.yourSeatIndex) ?? null;
-  const canRebuy = !!mySeat && mySeat.stack < state.config.bigBlind;
+  const isBustedOut = !!mySeat && mySeat.stack < state.config.bigBlind;
+  const canRebuy = isBustedOut && !state.isTournament;
+  const isEliminated = isBustedOut && state.isTournament;
 
   return (
     <div className="table-page">
@@ -119,6 +123,10 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
         <button className="btn btn--ghost btn--small" onClick={handleLeave}>
           ← Выйти
         </button>
+        <div className="table-page__blinds">
+          {state.isTournament ? "🏆 Турнир · " : ""}
+          блайнды {state.config.smallBlind}/{state.config.bigBlind}
+        </div>
         <div className="table-page__header-right">
           <button className="btn btn--ghost btn--small" onClick={handleToggleSound} title="Звук">
             {soundOn ? "🔊" : "🔇"}
@@ -140,7 +148,23 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
         <div className="turn-timer">Осталось {secondsLeft} с на ход</div>
       )}
 
-      {canRebuy ? (
+      {state.tournamentWinner ? (
+        <div className="rebuy-banner rebuy-banner--gold">
+          <p>
+            🏆 Турнир завершён! Победитель: <strong>{state.tournamentWinner.nickname}</strong>
+          </p>
+          <button className="btn btn--primary btn--big" onClick={handleLeave}>
+            Вернуться на главную
+          </button>
+        </div>
+      ) : isEliminated ? (
+        <div className="rebuy-banner">
+          <p>Вы выбыли из турнира — в этом формате без докупки. Удачи в следующий раз!</p>
+          <button className="btn btn--big" onClick={handleLeave}>
+            Вернуться на главную
+          </button>
+        </div>
+      ) : canRebuy ? (
         <div className="rebuy-banner">
           <p>Фишки закончились — это не страшно, они виртуальные и бесплатные.</p>
           <button className="btn btn--primary btn--big" onClick={handleRebuy}>

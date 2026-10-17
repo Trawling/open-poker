@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import type { Server } from "socket.io";
 import { resolveStakes } from "./stakes.js";
 import { TableRoom, type TableSnapshot } from "./tableRoom.js";
+import { TOURNAMENT_BLIND_LEVELS, TOURNAMENT_MAX_SEATS, TOURNAMENT_STARTING_STACK } from "./tournament.js";
 import type { ClientToServerEvents, ServerToClientEvents, SocketData } from "./protocol.js";
 
 type AppServer = Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
@@ -12,11 +13,13 @@ const BASE_CONFIG: Pick<TableConfig, "maxSeats" | "turnTimeMs"> = {
   turnTimeMs: 20000,
 };
 
-/** Через сколько мс после открытия быстрого стола добавить бота, если второй живой игрок ещё не пришёл. */
+/** Через сколько мс после открытия быстрого стола добавить ботов, если живых игроков не хватает. */
 const QUICK_PLAY_FILL_DELAY_MS = 6000;
 const QUICK_PLAY_MIN_PLAYERS = 2;
+/** Турнир ощущается турниром только с несколькими соперниками — добираем ботами до этого числа. */
+const TOURNAMENT_MIN_PLAYERS = 4;
 
-function buildConfig(tableId: string, stakesId: string | undefined): TableConfig {
+function buildCashConfig(tableId: string, stakesId: string | undefined): TableConfig {
   const stakes = resolveStakes(stakesId);
   return {
     ...BASE_CONFIG,
@@ -24,6 +27,18 @@ function buildConfig(tableId: string, stakesId: string | undefined): TableConfig
     smallBlind: stakes.smallBlind,
     bigBlind: stakes.bigBlind,
     startingStack: stakes.startingStack,
+  };
+}
+
+function buildTournamentConfig(tableId: string): TableConfig {
+  const firstLevel = TOURNAMENT_BLIND_LEVELS[0];
+  return {
+    maxSeats: TOURNAMENT_MAX_SEATS,
+    turnTimeMs: BASE_CONFIG.turnTimeMs,
+    tableId,
+    smallBlind: firstLevel.smallBlind,
+    bigBlind: firstLevel.bigBlind,
+    startingStack: TOURNAMENT_STARTING_STACK,
   };
 }
 
@@ -38,7 +53,7 @@ export class RoomManager {
 
   createPrivateTable(stakesId?: string): TableRoom {
     const id = nanoid(8);
-    const room = new TableRoom(id, buildConfig(id, stakesId), this.io, false);
+    const room = new TableRoom(id, buildCashConfig(id, stakesId), this.io, false);
     this.tables.set(id, room);
     return room;
   }
@@ -48,6 +63,7 @@ export class RoomManager {
     for (const room of this.tables.values()) {
       if (
         room.isPublic &&
+        !room.isTournament &&
         room.hasFreeSeat() &&
         room.table.config.smallBlind === stakes.smallBlind &&
         room.table.config.bigBlind === stakes.bigBlind
@@ -56,16 +72,35 @@ export class RoomManager {
       }
     }
     const id = `quick-${nanoid(6)}`;
-    const room = new TableRoom(id, buildConfig(id, stakesId), this.io, true);
+    const room = new TableRoom(id, buildCashConfig(id, stakesId), this.io, true);
     this.tables.set(id, room);
-    setTimeout(() => {
-      if (room.humanCount > 0 && room.seatedCount < QUICK_PLAY_MIN_PLAYERS) {
-        room.addBot();
-        room.broadcast();
+    this.scheduleAutoFill(room, QUICK_PLAY_MIN_PLAYERS);
+    return room;
+  }
+
+  findOrCreateQuickTournament(): TableRoom {
+    for (const room of this.tables.values()) {
+      if (room.isPublic && room.isTournament && room.hasFreeSeat() && !room.table.handInProgress) {
+        return room;
       }
+    }
+    const id = `tournament-${nanoid(6)}`;
+    const room = new TableRoom(id, buildTournamentConfig(id), this.io, true, true);
+    this.tables.set(id, room);
+    this.scheduleAutoFill(room, TOURNAMENT_MIN_PLAYERS);
+    return room;
+  }
+
+  /** Добирает стол ботами до minPlayers, если живых игроков не набралось за отведённое время. */
+  private scheduleAutoFill(room: TableRoom, minPlayers: number): void {
+    setTimeout(() => {
+      if (room.humanCount === 0) return; // никто не пришёл — нет смысла заполнять пустой стол
+      while (room.seatedCount < minPlayers && room.hasFreeSeat()) {
+        room.addBot();
+      }
+      room.broadcast();
       room.tryStartHand();
     }, QUICK_PLAY_FILL_DELAY_MS);
-    return room;
   }
 
   sweepEmptyTables(): void {

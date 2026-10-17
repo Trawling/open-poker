@@ -132,6 +132,25 @@ export class PokerTable {
     this.log({ type: "player-left", seatIndex, id: playerId });
   }
 
+  /**
+   * Сколько игроков за столом ещё не выбыли (стек больше нуля) —
+   * используется турнирным режимом (Sit & Go) на backend, чтобы понять,
+   * что остался один победитель. См. backend/src/tournament.ts.
+   */
+  activePlayerCount(): number {
+    return this.occupiedSeats().filter((i) => this.seats[i]!.stack > 0).length;
+  }
+
+  /**
+   * Меняет размер блайндов между раздачами — используется турнирным
+   * режимом для повышения блайндов по расписанию. Не трогает уже идущую
+   * раздачу (вызывать только когда handInProgress === false).
+   */
+  setBlinds(smallBlind: number, bigBlind: number): void {
+    this.config.smallBlind = smallBlind;
+    this.config.bigBlind = bigBlind;
+  }
+
   occupiedSeats(): number[] {
     const out: number[] = [];
     this.seats.forEach((s, i) => {

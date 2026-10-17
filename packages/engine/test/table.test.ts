@@ -152,4 +152,28 @@ describe("PokerTable — героям по-честному", () => {
     table.sitDown({ id: "a", nickname: "A" });
     expect(() => table.rebuy("a", 1000)).toThrow();
   });
+
+  it("setBlinds меняет блайнды для следующей раздачи (турнирный режим)", () => {
+    const table = new PokerTable(makeConfig({ smallBlind: 10, bigBlind: 20 }));
+    table.sitDown({ id: "a", nickname: "A" });
+    table.sitDown({ id: "b", nickname: "B" });
+
+    table.setBlinds(50, 100);
+    table.startHand();
+
+    expect(table.config.smallBlind).toBe(50);
+    expect(table.config.bigBlind).toBe(100);
+    const bb = table.seats[table.bigBlindSeatIndex!]!;
+    expect(bb.contributedStreet).toBe(100);
+  });
+
+  it("activePlayerCount считает только игроков с фишками больше нуля", () => {
+    const table = new PokerTable(makeConfig({ maxSeats: 3 }));
+    table.sitDown({ id: "a", nickname: "A" });
+    table.sitDown({ id: "b", nickname: "B" });
+    table.sitDown({ id: "c", nickname: "C" });
+    table.seats[1]!.stack = 0;
+
+    expect(table.activePlayerCount()).toBe(2);
+  });
 });

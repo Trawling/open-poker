@@ -6,9 +6,11 @@ import { DEFAULT_STAKES_ID, STAKES_LEVELS } from "../lib/stakes";
 export function Home({
   onQuickPlay,
   onCreateTable,
+  onQuickTournament,
 }: {
   onQuickPlay: (nickname: string, stakes: string) => void;
   onCreateTable: (nickname: string, stakes: string) => void;
+  onQuickTournament: (nickname: string) => void;
 }) {
   const [nickname, setNicknameInput] = useState(getNickname());
   const [stakes, setStakes] = useState(DEFAULT_STAKES_ID);
@@ -59,6 +61,9 @@ export function Home({
           </button>
           <button className="btn btn--big" onClick={() => onCreateTable(nickname, stakes)}>
             Создать стол для друзей
+          </button>
+          <button className="btn btn--big" onClick={() => onQuickTournament(nickname)}>
+            🏆 Турнир (без докупки, блайнды растут)
           </button>
         </div>
 

@@ -8,7 +8,9 @@ import type {
   HandHistoryEntry,
   ServerToClientEvents,
   SocketData,
+  TournamentWinner,
 } from "./protocol.js";
+import { blindLevelForHand } from "./tournament.js";
 
 type AppServer = Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
 
@@ -26,6 +28,7 @@ const MAX_HAND_HISTORY = 20;
 export interface TableSnapshot {
   id: string;
   isPublic: boolean;
+  isTournament: boolean;
   config: TableConfig;
   seats: { seatIndex: number; id: string; nickname: string; stack: number; isBot: boolean }[];
 }
@@ -38,6 +41,7 @@ export interface TableSnapshot {
 export class TableRoom {
   readonly id: string;
   readonly isPublic: boolean;
+  readonly isTournament: boolean;
   readonly table: PokerTable;
   private readonly io: AppServer;
   private readonly connections = new Map<string, Connection>();
@@ -50,12 +54,15 @@ export class TableRoom {
    * стеков, которые сохраняются через TableRoom.snapshot).
    */
   private handHistory: HandHistoryEntry[] = [];
+  /** Как только определён победитель турнира, новые раздачи больше не стартуют. */
+  private tournamentWinner: TournamentWinner | null = null;
 
-  constructor(id: string, config: TableConfig, io: AppServer, isPublic: boolean) {
+  constructor(id: string, config: TableConfig, io: AppServer, isPublic: boolean, isTournament = false) {
     this.id = id;
     this.table = new PokerTable(config);
     this.io = io;
     this.isPublic = isPublic;
+    this.isTournament = isTournament;
   }
 
   get humanCount(): number {
@@ -84,6 +91,10 @@ export class TableRoom {
 
   /** Докупка фишек для игрока, у которого их не осталось — см. PokerTable.rebuy. */
   rebuy(playerId: string): void {
+    if (this.isTournament) {
+      this.emitError(playerId, "В турнире докупка недоступна — выбыл, значит выбыл.");
+      return;
+    }
     try {
       this.table.rebuy(playerId, this.table.config.startingStack);
     } catch (err) {
@@ -142,7 +153,12 @@ export class TableRoom {
 
   tryStartHand(): void {
     if (this.table.handInProgress) return;
+    if (this.tournamentWinner) return;
     if (!this.table.canStartHand()) return;
+    if (this.isTournament) {
+      const level = blindLevelForHand(this.table.handNumber + 1);
+      this.table.setBlinds(level.smallBlind, level.bigBlind);
+    }
     this.table.startHand();
     this.broadcast();
     this.scheduleNextActor();
@@ -178,12 +194,27 @@ export class TableRoom {
     if (!this.table.handInProgress) {
       this.recordHandHistory();
       this.processPendingLeaves();
+      if (this.isTournament && this.checkTournamentFinished()) {
+        this.broadcast();
+        return;
+      }
       this.broadcast();
       this.scheduleAutoStart();
       return;
     }
     this.broadcast();
     this.scheduleNextActor();
+  }
+
+  /** Возвращает true, если турнир только что завершился (остался один игрок с фишками). */
+  private checkTournamentFinished(): boolean {
+    if (this.tournamentWinner) return true;
+    if (this.table.activePlayerCount() > 1) return false;
+    const winnerSeatIndex = this.table.occupiedSeats().find((i) => this.table.seats[i]!.stack > 0);
+    if (winnerSeatIndex === undefined) return false;
+    const seat = this.table.seats[winnerSeatIndex]!;
+    this.tournamentWinner = { playerId: seat.id, nickname: seat.nickname };
+    return true;
   }
 
   private recordHandHistory(): void {
@@ -279,11 +310,11 @@ export class TableRoom {
         isBot: seat.isBot,
       });
     });
-    return { id: this.id, isPublic: this.isPublic, config: this.table.config, seats };
+    return { id: this.id, isPublic: this.isPublic, isTournament: this.isTournament, config: this.table.config, seats };
   }
 
   static fromSnapshot(snapshot: TableSnapshot, io: AppServer): TableRoom {
-    const room = new TableRoom(snapshot.id, snapshot.config, io, snapshot.isPublic);
+    const room = new TableRoom(snapshot.id, snapshot.config, io, snapshot.isPublic, snapshot.isTournament);
     for (const seat of snapshot.seats) {
       if (seat.stack <= 0) continue; // не восстанавливаем обнулившихся ботов/игроков
       room.table.restoreSeat(seat.seatIndex, seat);
@@ -302,6 +333,8 @@ export class TableRoom {
         yourSeatIndex: seatIndex === -1 ? null : seatIndex,
         yourLegalActions: this.table.handInProgress ? this.table.getLegalActions(playerId) : null,
         recentHands: this.handHistory,
+        isTournament: this.isTournament,
+        tournamentWinner: this.tournamentWinner,
       });
     }
   }
