@@ -1,0 +1,19 @@
+{
+  "name": "@open-poker/engine",
+  "version": "0.1.0",
+  "description": "Чистый, не зависящий от сети движок No-Limit Texas Hold'em",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:watch": "tsc -p tsconfig.json --watch --preserveWatchOutput",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}

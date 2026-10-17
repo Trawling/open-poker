@@ -1,0 +1,27 @@
+{
+  "name": "@open-poker/backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Realtime-сервер столов: комнаты, матчмейкинг, боты, честная раздача",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@open-poker/engine": "*",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "nanoid": "^5.0.9",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
