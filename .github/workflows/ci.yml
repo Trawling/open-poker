@@ -34,6 +34,11 @@ jobs:
         run: npx tsc -p frontend/tsconfig.json --noEmit
 
       - name: Сквозной smoke-тест (backend + 2 сокет-клиента)
+        env:
+          # У каждого шага, поднимающего backend.dist/server.js, — своя
+          # директория данных, иначе при restore столов из "data/" по
+          # умолчанию шаги в одном job делят состояние друг друга.
+          DATA_DIR: /tmp/open-poker-ci-data-smoke
         run: |
           node backend/dist/server.js &
           BACKEND_PID=$!
@@ -52,6 +57,8 @@ jobs:
 
       - name: Тест турнирного режима (может занимать до нескольких минут)
         timeout-minutes: 8
+        env:
+          DATA_DIR: /tmp/open-poker-ci-data-tournament
         run: |
           node backend/dist/server.js &
           BACKEND_PID=$!
