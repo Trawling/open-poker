@@ -128,6 +128,53 @@ button {
   margin-top: 8px;
 }
 
+.identity-toggle {
+  align-self: center;
+}
+
+.identity-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.identity-panel__row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.identity-panel__code {
+  flex: 1;
+  background: var(--bg);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.identity-panel__hint {
+  color: var(--text-dim);
+  font-size: 11px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.identity-panel__input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+}
+
 .home__footer {
   display: flex;
   gap: 8px;

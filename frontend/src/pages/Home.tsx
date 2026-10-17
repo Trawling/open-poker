@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { IdentityPanel } from "../components/IdentityPanel";
 import { getNickname, setNickname } from "../lib/identity";
 
 export function Home({
@@ -43,6 +44,8 @@ export function Home({
         <p className="home__note">
           Без регистрации. Фишки виртуальные и ничего не стоят — это просто игра.
         </p>
+
+        <IdentityPanel />
       </div>
 
       <footer className="home__footer">

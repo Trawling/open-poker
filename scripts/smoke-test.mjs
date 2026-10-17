@@ -46,9 +46,11 @@ async function run() {
     });
   }
 
-  alice.emit("table:quick-play", { nickname: "Alice" });
+  // Приватный стол, а не пул «быстрой игры» — чтобы тест был изолирован
+  // от столов, оставшихся в памяти/снимке от предыдущих ручных прогонов.
+  alice.emit("table:create", { nickname: "Alice" });
   const joinedAlice = await waitFor(alice, "table:joined");
-  console.log("Alice села за стол", joinedAlice.tableId);
+  console.log("Alice создала стол", joinedAlice.tableId);
 
   bob.emit("table:join", { tableId: joinedAlice.tableId, nickname: "Bob" });
   await waitFor(bob, "table:joined");
