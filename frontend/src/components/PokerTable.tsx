@@ -17,7 +17,7 @@ const SEAT_RADIUS_Y = 39;
 /** Карты лежат ближе к центру стола, чем аватар игрока — как в реальной раздаче. */
 const CARDS_RADIUS_X = 29;
 const CARDS_RADIUS_Y = 25;
-const CENTER = { left: 50, top: 50 };
+const FALLBACK_CENTER = { left: 50, top: 50 };
 
 interface Point {
   left: number;
@@ -63,16 +63,34 @@ export function PokerTable({ state }: { state: PersonalTableState }) {
   const [flyingChips, setFlyingChips] = useState<FlyingChip[]>([]);
   const prevContributed = useRef<Map<number, number>>(new Map());
   const prevHadWinners = useRef(false);
+  const feltRef = useRef<HTMLDivElement>(null);
+  const potRef = useRef<HTMLDivElement>(null);
+
+  /** Реальное положение плашки банка на экране — она не строго в центре стола,
+   *  а ниже (под общими картами), поэтому фишки должны лететь именно туда. */
+  function getPotPoint(): Point {
+    const felt = feltRef.current;
+    const pot = potRef.current;
+    if (!felt || !pot) return FALLBACK_CENTER;
+    const feltRect = felt.getBoundingClientRect();
+    const potRect = pot.getBoundingClientRect();
+    if (feltRect.width === 0 || feltRect.height === 0) return FALLBACK_CENTER;
+    return {
+      left: ((potRect.left + potRect.width / 2 - feltRect.left) / feltRect.width) * 100,
+      top: ((potRect.top + potRect.height / 2 - feltRect.top) / feltRect.height) * 100,
+    };
+  }
 
   useEffect(() => {
     const newChips: FlyingChip[] = [];
+    const potPoint = getPotPoint();
 
     for (const seat of state.seats) {
       if (!seat.id) continue;
       const prev = prevContributed.current.get(seat.seatIndex) ?? 0;
       if (seat.contributedStreet > prev) {
         const from = seatPoint(seat.seatIndex, youIndex, n, SEAT_RADIUS_X, SEAT_RADIUS_Y);
-        newChips.push({ id: `bet-${seat.seatIndex}-${Date.now()}-${Math.random()}`, from, to: CENTER });
+        newChips.push({ id: `bet-${seat.seatIndex}-${Date.now()}-${Math.random()}`, from, to: potPoint });
       }
       prevContributed.current.set(seat.seatIndex, seat.contributedStreet);
     }
@@ -81,7 +99,7 @@ export function PokerTable({ state }: { state: PersonalTableState }) {
     if (hasWinnersNow && !prevHadWinners.current) {
       for (const w of state.winners ?? []) {
         const to = seatPoint(w.seatIndex, youIndex, n, SEAT_RADIUS_X, SEAT_RADIUS_Y);
-        newChips.push({ id: `win-${w.seatIndex}-${Date.now()}-${Math.random()}`, from: CENTER, to });
+        newChips.push({ id: `win-${w.seatIndex}-${Date.now()}-${Math.random()}`, from: potPoint, to });
       }
     }
     prevHadWinners.current = hasWinnersNow;
@@ -97,7 +115,7 @@ export function PokerTable({ state }: { state: PersonalTableState }) {
   }, [state.seats, state.winners, state.handNumber]);
 
   return (
-    <div className="felt">
+    <div className="felt" ref={feltRef}>
       <div className="felt__center">
         <div className="felt__street">{STREET_LABEL[state.street] ?? state.street}</div>
         <div className="felt__community">
@@ -110,7 +128,7 @@ export function PokerTable({ state }: { state: PersonalTableState }) {
             />
           ))}
         </div>
-        <div className="pot-pill glass">
+        <div className="pot-pill glass" ref={potRef}>
           <ChipIcon size={13} />
           Банк: {totalPot}
         </div>
