@@ -1,9 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { PokerTable } from "@open-poker/engine";
 import type { ActionInput, TableConfig } from "@open-poker/engine";
 import type { Server } from "socket.io";
 import { decideBotAction } from "./bot.js";
 import { generateBotNickname } from "./names.js";
 import type {
+  ChatMessage,
   ClientToServerEvents,
   HandHistoryEntry,
   ServerToClientEvents,
@@ -25,6 +27,8 @@ const NEXT_HAND_DELAY_MS = 4000;
 const BOT_MIN_DELAY_MS = 700;
 const BOT_MAX_DELAY_MS = 1800;
 const MAX_HAND_HISTORY = 20;
+const MAX_CHAT_HISTORY = 50;
+const MAX_CHAT_MESSAGE_LENGTH = 240;
 
 export interface TableSnapshot {
   id: string;
@@ -57,6 +61,8 @@ export class TableRoom {
   private handHistory: HandHistoryEntry[] = [];
   /** Как только определён победитель турнира, новые раздачи больше не стартуют. */
   private tournamentWinner: TournamentWinner | null = null;
+  /** Чат стола — не переживает перезапуск сервера, как и история раздач. */
+  private chatHistory: ChatMessage[] = [];
 
   constructor(id: string, config: TableConfig, io: AppServer, isPublic: boolean, isTournament = false) {
     this.id = id;
@@ -104,6 +110,29 @@ export class TableRoom {
     }
     this.broadcast();
     this.tryStartHand();
+  }
+
+  /** Чат за столом: только живые игроки, текст обрезается и ограничен по длине. */
+  sendChat(playerId: string, rawText: string): void {
+    const text = rawText.trim().slice(0, MAX_CHAT_MESSAGE_LENGTH);
+    if (!text) return;
+    const conn = this.connections.get(playerId);
+    if (!conn || conn.isBot) return;
+    const seatIndex = this.table.seats.findIndex((s) => s?.id === playerId);
+    const message: ChatMessage = {
+      id: randomUUID(),
+      seatIndex: seatIndex === -1 ? null : seatIndex,
+      nickname: conn.nickname,
+      text,
+      timestamp: Date.now(),
+    };
+    this.chatHistory.push(message);
+    if (this.chatHistory.length > MAX_CHAT_HISTORY) {
+      this.chatHistory.shift();
+    }
+    for (const c of this.connections.values()) {
+      if (c.socketId) this.io.to(c.socketId).emit("table:chat", message);
+    }
   }
 
   addBot(): void {
@@ -359,6 +388,7 @@ export class TableRoom {
         yourSeatIndex: seatIndex === -1 ? null : seatIndex,
         yourLegalActions: this.table.handInProgress ? this.table.getLegalActions(playerId) : null,
         recentHands: this.handHistory,
+        recentChat: this.chatHistory,
         isTournament: this.isTournament,
         tournamentWinner: this.tournamentWinner,
       });

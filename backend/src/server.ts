@@ -124,6 +124,11 @@ io.on("connection", (socket: AppSocket) => {
     room.rebuy(guestId);
   });
 
+  socket.on("table:chat-send", ({ text }) => {
+    const room = socket.data.tableId ? roomManager.get(socket.data.tableId) : undefined;
+    room?.sendChat(guestId, text ?? "");
+  });
+
   socket.on("table:leave", () => {
     const room = socket.data.tableId ? roomManager.get(socket.data.tableId) : undefined;
     room?.leave(guestId);

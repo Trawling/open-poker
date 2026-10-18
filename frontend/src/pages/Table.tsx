@@ -1,13 +1,14 @@
-import { Link2, LogOut, UserPlus, Volume2, VolumeX } from "lucide-react";
+import { Link2, LogOut, MessageCircle, UserPlus, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ActionBar } from "../components/ActionBar";
+import { ChatPanel } from "../components/ChatPanel";
 import { ChipIcon } from "../components/ChipIcon";
 import { HandHistory } from "../components/HandHistory";
 import { PokerTable } from "../components/PokerTable";
 import { getNickname } from "../lib/identity";
-import type { ActionInput, PersonalTableState } from "../lib/protocol";
+import type { ActionInput, ChatMessage, PersonalTableState } from "../lib/protocol";
 import { getSocket } from "../lib/socket";
-import { isSoundEnabled, playActionSound, playWinSound, playYourTurnSound, setSoundEnabled } from "../lib/sound";
+import { isSoundEnabled, playActionSound, playChatSound, playWinSound, playYourTurnSound, setSoundEnabled } from "../lib/sound";
 
 export type TableIntent =
   | { type: "quick"; stakes: string }
@@ -16,14 +17,25 @@ export type TableIntent =
   | { type: "create-tournament" }
   | { type: "join"; tableId: string };
 
+function mergeChatMessages(existing: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] {
+  const byId = new Map(existing.map((m) => [m.id, m]));
+  for (const m of incoming) byId.set(m.id, m);
+  return [...byId.values()].sort((a, b) => a.timestamp - b.timestamp);
+}
+
 export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () => void }) {
   const [state, setState] = useState<PersonalTableState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const startedRef = useRef(false);
   const wasYourTurnRef = useRef(false);
   const lastAnnouncedHandRef = useRef<number | null>(null);
+  const chatOpenRef = useRef(chatOpen);
+  chatOpenRef.current = chatOpen;
 
   useEffect(() => {
     const socket = getSocket();
@@ -31,6 +43,16 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
 
     function handleState(payload: PersonalTableState) {
       setState(payload);
+      if (payload.recentChat?.length) {
+        setChatMessages((prev) => mergeChatMessages(prev, payload.recentChat));
+      }
+    }
+    function handleChat(message: ChatMessage) {
+      setChatMessages((prev) => mergeChatMessages(prev, [message]));
+      if (!chatOpenRef.current) {
+        setUnreadCount((n) => n + 1);
+        playChatSound();
+      }
     }
     function handleError(payload: { message: string }) {
       setError(payload.message);
@@ -41,6 +63,7 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
     }
 
     socket.on("table:state", handleState);
+    socket.on("table:chat", handleChat);
     socket.on("table:error", handleError);
     socket.on("table:joined", handleJoined);
 
@@ -55,6 +78,7 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
 
     return () => {
       socket.off("table:state", handleState);
+      socket.off("table:chat", handleChat);
       socket.off("table:error", handleError);
       socket.off("table:joined", handleJoined);
     };
@@ -109,6 +133,15 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
     navigator.clipboard?.writeText(window.location.href).catch(() => undefined);
   }
 
+  function handleToggleChat() {
+    setChatOpen((v) => !v);
+    setUnreadCount(0);
+  }
+
+  function handleSendChat(text: string) {
+    getSocket().emit("table:chat-send", { text });
+  }
+
   if (!state) {
     return <div className="table-page table-page--loading">Подключаемся к столу…</div>;
   }
@@ -152,6 +185,14 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
           <button className="btn btn--ghost btn--icon" onClick={handleAddBot} title="Добавить бота">
             <UserPlus size={16} />
           </button>
+          <button
+            className="btn btn--ghost btn--icon icon-badge"
+            onClick={handleToggleChat}
+            title="Чат стола"
+          >
+            <MessageCircle size={16} />
+            {unreadCount > 0 && <span className="icon-badge__dot" />}
+          </button>
         </div>
       </header>
 
@@ -194,6 +235,15 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
         <HandHistory hands={state.recentHands} />
         <FairnessFooter state={state} />
       </div>
+
+      {chatOpen && (
+        <ChatPanel
+          messages={chatMessages}
+          mySeatIndex={state.yourSeatIndex}
+          onClose={() => setChatOpen(false)}
+          onSend={handleSendChat}
+        />
+      )}
     </div>
   );
 }

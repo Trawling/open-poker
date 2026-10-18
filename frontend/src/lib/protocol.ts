@@ -23,12 +23,21 @@ export interface TournamentWinner {
   nickname: string;
 }
 
+export interface ChatMessage {
+  id: string;
+  seatIndex: number | null;
+  nickname: string;
+  text: string;
+  timestamp: number;
+}
+
 export interface PersonalTableState extends PublicTableState {
   yourLegalActions: LegalActions | null;
   yourSeatIndex: number | null;
   recentHands: HandHistoryEntry[];
   isTournament: boolean;
   tournamentWinner: TournamentWinner | null;
+  recentChat: ChatMessage[];
 }
 
 export interface ClientToServerEvents {
@@ -41,12 +50,14 @@ export interface ClientToServerEvents {
   "table:add-bot": () => void;
   "table:rebuy": () => void;
   "table:leave": () => void;
+  "table:chat-send": (payload: { text: string }) => void;
 }
 
 export interface ServerToClientEvents {
   "table:joined": (payload: { tableId: string; playerId: string; seatIndex: number }) => void;
   "table:state": (payload: PersonalTableState) => void;
   "table:error": (payload: { message: string }) => void;
+  "table:chat": (payload: ChatMessage) => void;
 }
 
 export type { ActionInput, ActionType, Card, LegalActions, PublicSeatView } from "@open-poker/engine";

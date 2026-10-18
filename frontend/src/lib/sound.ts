@@ -52,3 +52,7 @@ export function playWinSound(): void {
   setTimeout(() => beep(659, 100), 110);
   setTimeout(() => beep(784, 160), 220);
 }
+
+export function playChatSound(): void {
+  beep(880, 50, 0.03);
+}
