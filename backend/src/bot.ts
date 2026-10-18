@@ -1,7 +1,9 @@
 import { estimateEquity, type ActionInput, type PokerTable } from "@open-poker/engine";
 
 /** Стек короче этого числа больших блайндов — играем пуш/фолд, а не тонкую игру. */
-const SHORT_STACK_BB_THRESHOLD = 10;
+const SHORT_STACK_BB_THRESHOLD = 12;
+/** Ещё короче — почти не фолдим: блайнды всё равно добьют за 1-2 круга. */
+const CRITICAL_STACK_BB_THRESHOLD = 5;
 
 /**
  * Бот-заполнитель, принимающий решения на основе оценки силы руки
@@ -46,7 +48,8 @@ export function decideBotAction(table: PokerTable, playerId: string): ActionInpu
 
   const stackInBigBlinds = player.stack / table.config.bigBlind;
   if (stackInBigBlinds <= SHORT_STACK_BB_THRESHOLD) {
-    return decideShortStackAction(legal, perceivedStrength, potOdds);
+    const isCritical = stackInBigBlinds <= CRITICAL_STACK_BB_THRESHOLD;
+    return decideShortStackAction(legal, perceivedStrength, potOdds, isCritical);
   }
 
   if (legal.canCheck) {
@@ -84,27 +87,39 @@ export function decideBotAction(table: PokerTable, playerId: string): ActionInpu
   return { type: "call" };
 }
 
-/** Прямолинейный пуш/фолд для короткого стека — без полуставок и тонкой игры. */
+/**
+ * Прямолинейный пуш/фолд для короткого стека — без полуставок и тонкой игры.
+ * На критически коротком стеке (CRITICAL_STACK_BB_THRESHOLD) почти не
+ * фолдим: блайнды всё равно добьют за 1-2 круга, так что смысла беречь
+ * фишки для следующей раздачи больше нет — цель формата "турбо" важнее
+ * имитации "осторожной" игры.
+ */
 function decideShortStackAction(
   legal: ReturnType<PokerTable["getLegalActions"]>,
   perceivedStrength: number,
   potOdds: number,
+  isCritical: boolean,
 ): ActionInput {
+  const shoveThreshold = isCritical ? 0.15 : 0.4;
+  const callThreshold = isCritical ? -0.4 : -0.1;
+
   if (legal.canCheck) {
-    if (legal.canBet && perceivedStrength > 0.4) {
+    if (legal.canBet && perceivedStrength > shoveThreshold) {
       return { type: "bet", amount: legal.maxTo };
     }
     return { type: "check" };
   }
-  if (legal.canRaise && perceivedStrength > 0.45) {
+  if (legal.canRaise && perceivedStrength > shoveThreshold) {
     return { type: "raise", amount: legal.maxTo };
   }
   // Фолдить с коротким стеком почти бессмысленно — блайнды съедят его и так,
-  // поэтому порог колла заметно ниже, чем при глубоком стеке.
-  if (legal.canCall && perceivedStrength > potOdds - 0.1) {
+  // поэтому порог колла заметно ниже, чем при глубоком стеке (и почти
+  // отсутствует на критическом стеке).
+  if (legal.canCall && perceivedStrength > potOdds + callThreshold) {
     return { type: "call" };
   }
-  if (legal.canFold) return { type: "fold" };
+  if (legal.canFold && !isCritical) return { type: "fold" };
   if (legal.canCall) return { type: "call" };
+  if (legal.canFold) return { type: "fold" };
   return { type: "fold" };
 }

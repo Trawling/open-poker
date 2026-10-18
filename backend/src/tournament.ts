@@ -7,7 +7,7 @@
  * в одиночку с ботами, не дожидаясь полного стола. См. docs/03-implementation-notes.md.
  */
 
-export const TOURNAMENT_HANDS_PER_LEVEL = 3;
+export const TOURNAMENT_HANDS_PER_LEVEL = 2;
 
 export interface BlindLevel {
   smallBlind: number;
