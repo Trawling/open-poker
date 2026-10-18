@@ -44,7 +44,7 @@ export function StatsPanel() {
   }
 
   return (
-    <div className="identity-panel">
+    <div className="identity-panel glass">
       {loading && <p className="identity-panel__hint">Загружаем…</p>}
       {error && <p className="identity-panel__hint">{error}</p>}
       {stats && (

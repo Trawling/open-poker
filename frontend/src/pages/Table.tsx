@@ -1,5 +1,7 @@
+import { Link2, LogOut, UserPlus, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ActionBar } from "../components/ActionBar";
+import { ChipIcon } from "../components/ChipIcon";
 import { HandHistory } from "../components/HandHistory";
 import { PokerTable } from "../components/PokerTable";
 import { getNickname } from "../lib/identity";
@@ -121,71 +123,84 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
 
   return (
     <div className="table-page">
-      <header className="table-page__header">
-        <button className="btn btn--ghost btn--small" onClick={handleLeave}>
-          ← Выйти
-        </button>
-        <div className="table-page__blinds">
-          {state.isTournament ? "🏆 Турнир · " : ""}
-          блайнды {state.config.smallBlind}/{state.config.bigBlind}
+      <header className="table-header">
+        <div className="table-header__left">
+          <button className="btn btn--ghost btn--icon" onClick={handleLeave} title="Выйти">
+            <LogOut size={16} />
+          </button>
+          <span className="badge-pill glass">
+            {state.isTournament ? "🏆 Турнир · " : ""}
+            блайнды {state.config.smallBlind}/{state.config.bigBlind}
+          </span>
         </div>
-        <div className="table-page__header-right">
-          <button className="btn btn--ghost btn--small" onClick={handleToggleSound} title="Звук">
-            {soundOn ? "🔊" : "🔇"}
+        <div className="table-header__right">
+          {mySeat && (
+            <div className="balance-pill glass">
+              <ChipIcon size={20} />
+              <div className="balance-pill__text">
+                <span className="balance-pill__amount">{mySeat.stack}</span>
+                <span className="balance-pill__label">Ваш стек</span>
+              </div>
+            </div>
+          )}
+          <button className="btn btn--ghost btn--icon" onClick={handleToggleSound} title="Звук">
+            {soundOn ? <Volume2 size={16} /> : <VolumeX size={16} />}
           </button>
-          <button className="btn btn--ghost btn--small" onClick={handleCopyLink}>
-            Скопировать ссылку на стол
+          <button className="btn btn--ghost btn--icon" onClick={handleCopyLink} title="Скопировать ссылку на стол">
+            <Link2 size={16} />
           </button>
-          <button className="btn btn--ghost btn--small" onClick={handleAddBot}>
-            + Добавить бота
+          <button className="btn btn--ghost btn--icon" onClick={handleAddBot} title="Добавить бота">
+            <UserPlus size={16} />
           </button>
         </div>
       </header>
 
-      {error && <div className="toast toast--error">{error}</div>}
+      <div className="table-body">
+        {error && <div className="toast glass">{error}</div>}
 
-      <PokerTable state={state} />
+        <PokerTable state={state} />
 
-      {isYourTurn && secondsLeft !== null && (
-        <div className="turn-timer">Осталось {secondsLeft} с на ход</div>
-      )}
+        {isYourTurn && secondsLeft !== null && (
+          <div className="turn-timer">Осталось {secondsLeft} с на ход</div>
+        )}
 
-      {state.tournamentWinner ? (
-        <div className="rebuy-banner rebuy-banner--gold">
-          <p>
-            🏆 Турнир завершён! Победитель: <strong>{state.tournamentWinner.nickname}</strong>
-          </p>
-          <button className="btn btn--primary btn--big" onClick={handleLeave}>
-            Вернуться на главную
-          </button>
-        </div>
-      ) : isEliminated ? (
-        <div className="rebuy-banner">
-          <p>Вы выбыли из турнира — в этом формате без докупки. Удачи в следующий раз!</p>
-          <button className="btn btn--big" onClick={handleLeave}>
-            Вернуться на главную
-          </button>
-        </div>
-      ) : canRebuy ? (
-        <div className="rebuy-banner">
-          <p>Фишки закончились — это не страшно, они виртуальные и бесплатные.</p>
-          <button className="btn btn--primary btn--big" onClick={handleRebuy}>
-            Докупить {state.config.startingStack} фишек
-          </button>
-        </div>
-      ) : (
-        <ActionBar legalActions={state.yourLegalActions} potSize={totalPot} onAction={handleAction} />
-      )}
+        {state.tournamentWinner ? (
+          <div className="rebuy-banner rebuy-banner--gold glass">
+            <p>
+              🏆 Турнир завершён! Победитель: <strong>{state.tournamentWinner.nickname}</strong>
+            </p>
+            <button className="btn btn--primary btn--big" onClick={handleLeave}>
+              Вернуться на главную
+            </button>
+          </div>
+        ) : isEliminated ? (
+          <div className="rebuy-banner glass">
+            <p>Вы выбыли из турнира — в этом формате без докупки. Удачи в следующий раз!</p>
+            <button className="btn btn--ghost btn--big" onClick={handleLeave}>
+              Вернуться на главную
+            </button>
+          </div>
+        ) : canRebuy ? (
+          <div className="rebuy-banner glass">
+            <p>Фишки закончились — это не страшно, они виртуальные и бесплатные.</p>
+            <button className="btn btn--primary btn--big" onClick={handleRebuy}>
+              Докупить {state.config.startingStack} фишек
+            </button>
+          </div>
+        ) : (
+          <ActionBar legalActions={state.yourLegalActions} potSize={totalPot} onAction={handleAction} />
+        )}
 
-      <HandHistory hands={state.recentHands} />
-      <FairnessFooter state={state} />
+        <HandHistory hands={state.recentHands} />
+        <FairnessFooter state={state} />
+      </div>
     </div>
   );
 }
 
 function FairnessFooter({ state }: { state: PersonalTableState }) {
   return (
-    <details className="fairness">
+    <details className="panel-collapsible glass">
       <summary>Честность раздачи №{state.handNumber}</summary>
       <div className="fairness__body">
         <p>

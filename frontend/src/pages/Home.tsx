@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Brand } from "../components/Brand";
 import { IdentityPanel } from "../components/IdentityPanel";
 import { StatsPanel } from "../components/StatsPanel";
 import { getNickname, setNickname } from "../lib/identity";
@@ -24,67 +25,73 @@ export function Home({
 
   return (
     <div className="home">
-      <div className="home__card">
-        <h1 className="home__title">Open Poker</h1>
-        <p className="home__subtitle">
-          Бесплатный покер без рекламы и без денег. Открытый код. Зашёл — и сразу играешь.
-        </p>
+      <header className="home__topbar">
+        <Brand />
+      </header>
 
-        <input
-          className="home__nickname"
-          placeholder="Ваш ник (необязательно)"
-          value={nickname}
-          maxLength={24}
-          onChange={(e) => setNicknameInput(e.target.value)}
-          onBlur={handleNicknameBlur}
-        />
+      <div className="home__body">
+        <div className="home__card">
+          <h1 className="home__title">Open Poker</h1>
+          <p className="home__subtitle">
+            Бесплатный покер без рекламы и без денег. Открытый код. Зашёл — и сразу играешь.
+          </p>
 
-        <section className="home__section">
-          <h2 className="home__section-title">Кэш-игра</h2>
-          <div className="home__stakes">
-            <div className="home__stakes-options">
-              {STAKES_LEVELS.map((level) => (
-                <button
-                  key={level.id}
-                  className={`chip ${stakes === level.id ? "chip--active" : ""}`}
-                  onClick={() => setStakes(level.id)}
-                  type="button"
-                >
-                  {level.label}
-                </button>
-              ))}
+          <input
+            className="home__nickname"
+            placeholder="Ваш ник (необязательно)"
+            value={nickname}
+            maxLength={24}
+            onChange={(e) => setNicknameInput(e.target.value)}
+            onBlur={handleNicknameBlur}
+          />
+
+          <section className="home__section glass">
+            <h2 className="home__section-title">Кэш-игра</h2>
+            <div className="home__stakes">
+              <div className="home__stakes-options">
+                {STAKES_LEVELS.map((level) => (
+                  <button
+                    key={level.id}
+                    className={`chip ${stakes === level.id ? "chip--active" : ""}`}
+                    onClick={() => setStakes(level.id)}
+                    type="button"
+                  >
+                    {level.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="home__actions">
-            <button className="btn btn--primary btn--big" onClick={() => onQuickPlay(nickname, stakes)}>
-              Быстрая игра
-            </button>
-            <button className="btn btn--big" onClick={() => onCreateTable(nickname, stakes)}>
-              Создать стол для друзей
-            </button>
-          </div>
-        </section>
+            <div className="home__actions">
+              <button className="btn btn--primary btn--big" onClick={() => onQuickPlay(nickname, stakes)}>
+                Быстрая игра
+              </button>
+              <button className="btn btn--ghost btn--big" onClick={() => onCreateTable(nickname, stakes)}>
+                Создать стол для друзей
+              </button>
+            </div>
+          </section>
 
-        <section className="home__section">
-          <h2 className="home__section-title">🏆 Турнир</h2>
-          <p className="home__section-hint">Без докупки, блайнды растут — игра до последнего.</p>
-          <div className="home__actions">
-            <button className="btn btn--big" onClick={() => onQuickTournament(nickname)}>
-              Быстрый турнир
-            </button>
-            <button className="btn btn--big" onClick={() => onCreateTournament(nickname)}>
-              Турнир для друзей
-            </button>
+          <section className="home__section glass">
+            <h2 className="home__section-title">🏆 Турнир</h2>
+            <p className="home__section-hint">Без докупки, блайнды растут — игра до последнего.</p>
+            <div className="home__actions">
+              <button className="btn btn--ghost btn--big" onClick={() => onQuickTournament(nickname)}>
+                Быстрый турнир
+              </button>
+              <button className="btn btn--ghost btn--big" onClick={() => onCreateTournament(nickname)}>
+                Турнир для друзей
+              </button>
+            </div>
+          </section>
+
+          <p className="home__note">
+            Без регистрации. Фишки виртуальные и ничего не стоят — это просто игра.
+          </p>
+
+          <div className="home__meta-row">
+            <StatsPanel />
+            <IdentityPanel />
           </div>
-        </section>
-
-        <p className="home__note">
-          Без регистрации. Фишки виртуальные и ничего не стоят — это просто игра.
-        </p>
-
-        <div className="home__meta-row">
-          <StatsPanel />
-          <IdentityPanel />
         </div>
       </div>
 

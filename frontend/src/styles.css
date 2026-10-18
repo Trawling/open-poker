@@ -1,16 +1,36 @@
 :root {
-  --bg: #121417;
-  --bg-elevated: #1b1f24;
-  --felt: #16302a;
-  --felt-border: #0d1a16;
-  --text: #e8eaed;
-  --text-dim: #9aa4af;
-  --accent: #3ddc97;
-  --accent-dim: #28a876;
-  --danger: #e5484d;
-  --border: #2a2f36;
-  --radius: 10px;
+  --bg: #0a0a0c;
+  --bg-elevated: #131317;
+  --bg-panel: #17181c;
+  --bg-input: #0e0e11;
+  --felt-light: #1f5a42;
+  --text: #f5f5f6;
+  --text-dim: #9a9aa4;
+  --text-faint: #6b6b74;
+  --accent: #22c55e;
+  --accent-strong: #16a34a;
+  --accent-soft: rgba(34, 197, 94, 0.16);
+  --gold: #f4c04f;
+  --danger: #ef4444;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --glass-fill: rgba(255, 255, 255, 0.07);
+  --glass-fill-strong: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-blur: 18px;
   color-scheme: dark;
+}
+
+/* ---------- Матовое стекло (glassmorphism) — вместо сплошных тёмных панелей ---------- */
+
+.glass {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
 }
 
 * {
@@ -37,40 +57,94 @@ button {
 /* ---------- Общие элементы ---------- */
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 10px 16px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-panel);
   color: var(--text);
   cursor: pointer;
   font-size: 14px;
-  transition: filter 0.15s ease;
+  transition: filter 0.15s ease, border-color 0.15s ease;
 }
 
 .btn:hover {
-  filter: brightness(1.15);
+  filter: brightness(1.2);
+  border-color: var(--border-strong);
 }
 
 .btn--primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #06281c;
-  font-weight: 600;
+  color: #06210f;
+  font-weight: 700;
 }
 
 .btn--ghost {
-  background: transparent;
+  background: var(--glass-fill);
+  border-color: var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
 }
 
 .btn--big {
   padding: 14px 20px;
   font-size: 16px;
   width: 100%;
+  border-radius: var(--radius);
 }
 
 .btn--small {
-  padding: 6px 10px;
+  padding: 6px 12px;
   font-size: 12px;
+}
+
+.btn--icon {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* ---------- Бренд (лого + "Open Source" бейдж) ---------- */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand__mark {
+  color: var(--accent);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.brand__name {
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.badge-pill:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
 }
 
 /* ---------- Главная страница ---------- */
@@ -79,15 +153,28 @@ button {
   min-height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.home__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+}
+
+.home__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 32px 24px;
   gap: 24px;
 }
 
 .home__card {
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -95,22 +182,24 @@ button {
 }
 
 .home__title {
-  font-size: 40px;
+  font-size: 34px;
   margin: 0;
   letter-spacing: -0.02em;
+  font-weight: 800;
 }
 
 .home__subtitle {
   color: var(--text-dim);
   margin: 0 0 8px;
   line-height: 1.5;
+  font-size: 14px;
 }
 
 .home__nickname {
-  padding: 12px 14px;
+  padding: 12px 16px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
   color: var(--text);
   font-size: 14px;
 }
@@ -119,15 +208,14 @@ button {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-elevated);
+  padding: 16px;
+  border-radius: var(--radius-lg);
 }
 
 .home__section-title {
   margin: 0;
   font-size: 15px;
+  font-weight: 700;
 }
 
 .home__section-hint {
@@ -143,11 +231,6 @@ button {
   align-items: center;
 }
 
-.home__stakes-label {
-  font-size: 12px;
-  color: var(--text-dim);
-}
-
 .home__stakes-options {
   display: flex;
   gap: 6px;
@@ -156,23 +239,21 @@ button {
 }
 
 .chip {
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-fill);
   color: var(--text-dim);
   font-size: 12px;
   cursor: pointer;
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
 }
 
 .chip--active {
   border-color: var(--accent);
   color: var(--accent);
-}
-
-.home__stakes-hint {
-  font-size: 11px;
-  color: var(--text-dim);
+  background: var(--accent-soft);
 }
 
 .home__actions {
@@ -183,9 +264,9 @@ button {
 }
 
 .home__note {
-  color: var(--text-dim);
+  color: var(--text-faint);
   font-size: 12px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .home__meta-row {
@@ -194,29 +275,30 @@ button {
   gap: 8px;
 }
 
-.identity-toggle {
-  align-self: center;
+.home__footer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  font-size: 12px;
+  padding: 18px;
 }
 
-.stats-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 13px;
-  color: var(--text);
+.home__footer a {
+  color: var(--text-faint);
+}
+
+.identity-toggle {
+  align-self: center;
 }
 
 .identity-panel {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 10px 12px;
+  padding: 12px 14px;
   text-align: left;
 }
 
@@ -228,7 +310,7 @@ button {
 
 .identity-panel__code {
   flex: 1;
-  background: var(--bg);
+  background: var(--bg-input);
   padding: 6px 8px;
   border-radius: 6px;
   font-size: 11px;
@@ -246,22 +328,21 @@ button {
   flex: 1;
   padding: 8px 10px;
   border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
   color: var(--text);
   font-size: 12px;
 }
 
-.home__footer {
+.stats-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  gap: 8px;
-  align-items: center;
-  color: var(--text-dim);
-  font-size: 12px;
-}
-
-.home__footer a {
-  color: var(--text-dim);
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text);
 }
 
 /* ---------- Страница стола ---------- */
@@ -270,9 +351,7 @@ button {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 12px 16px 24px;
-  gap: 12px;
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -280,31 +359,70 @@ button {
   align-items: center;
   justify-content: center;
   display: flex;
+  min-height: 100%;
   color: var(--text-dim);
 }
 
-.table-page__header {
+.table-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
   flex-wrap: wrap;
-  gap: 8px;
 }
 
-.table-page__header-right {
+.table-header__left {
   display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.table-header__right {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.table-page__blinds {
-  font-size: 12px;
+.balance-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 999px;
+}
+
+.balance-pill__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.balance-pill__amount {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.balance-pill__label {
+  font-size: 10px;
   color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
 }
 
 .turn-timer {
   text-align: center;
   color: var(--accent);
   font-size: 13px;
+  font-weight: 600;
 }
 
 .toast {
@@ -314,22 +432,18 @@ button {
   transform: translateX(-50%);
   padding: 10px 18px;
   border-radius: var(--radius);
-  background: var(--bg-elevated);
-  border: 1px solid var(--danger);
+  border-color: var(--danger);
   color: var(--text);
   z-index: 10;
 }
 
-/* ---------- Стол (сукно) ---------- */
+/* ---------- Стол: мягкое свечение вместо сукна с деревянным бортом ---------- */
 
 .felt {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
-  background: radial-gradient(ellipse at center, var(--felt) 0%, var(--felt-border) 100%);
-  border-radius: 50% / 40%;
-  border: 6px solid #0a130f;
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
+  aspect-ratio: 16 / 9;
+  background: radial-gradient(ellipse 60% 55% at center, var(--felt-light) 0%, transparent 72%);
 }
 
 .felt__center {
@@ -340,77 +454,86 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  width: 70%;
+  gap: 8px;
+  width: 78%;
 }
 
 .felt__street {
-  color: var(--text-dim);
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 
 .felt__community {
   display: flex;
-  gap: 4px;
+  gap: 5px;
 }
 
-.felt__pot {
-  color: var(--accent);
+.pot-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+  font-size: 13px;
   font-weight: 600;
-  font-size: 14px;
+  padding: 7px 16px;
+  border-radius: 999px;
 }
 
 .felt__winners {
   color: var(--text);
   font-size: 13px;
   text-align: center;
-  background: rgba(0, 0, 0, 0.35);
-  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px 12px;
   border-radius: var(--radius);
 }
 
 /* ---------- Карты ---------- */
 
 .card {
-  width: 38px;
-  height: 54px;
-  border-radius: 6px;
+  width: 42px;
+  height: 58px;
+  border-radius: 7px;
   background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1;
   gap: 2px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  flex-shrink: 0;
 }
 
 .card--small {
-  width: 28px;
-  height: 40px;
-  font-size: 11px;
+  width: 32px;
+  height: 44px;
+  font-size: 12px;
+  border-radius: 6px;
 }
 
 .card--red {
-  color: #c6262e;
+  color: #dc2626;
 }
 
 .card--black {
-  color: #1a1a1a;
+  color: #18181b;
 }
 
 .card--back {
-  background: repeating-linear-gradient(45deg, var(--accent-dim), var(--accent-dim) 4px, #0f5c42 4px, #0f5c42 8px);
-  border: 1px solid #0a3c2c;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .card--empty {
-  background: transparent;
-  border: 1px dashed rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
   box-shadow: none;
 }
 
@@ -429,6 +552,26 @@ button {
   }
 }
 
+/* ---------- Карты в руке игрока (у центра стола, ближе к центру) ---------- */
+
+.hole-cards {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: -6px;
+  z-index: 2;
+}
+
+.hole-cards .card,
+.hole-cards .card--small {
+  margin-left: -6px;
+}
+
+.hole-cards .card:first-child,
+.hole-cards .card--small:first-child {
+  margin-left: 0;
+}
+
 /* ---------- Места игроков ---------- */
 
 .seat {
@@ -436,20 +579,21 @@ button {
   transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 6px 10px;
-  min-width: 120px;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 5px 16px 5px 5px;
+  min-width: 140px;
   font-size: 12px;
+  z-index: 3;
 }
 
 .seat--empty {
-  color: var(--text-dim);
+  color: var(--text-faint);
   justify-content: center;
-  min-width: 80px;
-  opacity: 0.5;
+  min-width: 90px;
+  padding: 8px 14px;
+  opacity: 0.55;
+  border-style: dashed;
 }
 
 .seat--active {
@@ -458,25 +602,26 @@ button {
 }
 
 .seat--folded {
-  opacity: 0.45;
+  opacity: 0.4;
 }
 
 .seat--sitting-out {
-  opacity: 0.35;
+  opacity: 0.32;
 }
 
 .seat--winner {
-  border-color: #f4c04f;
+  border-color: var(--gold);
   box-shadow: 0 0 0 2px rgba(244, 192, 79, 0.45);
   animation: winner-glow 1s ease-in-out;
 }
 
 @keyframes seat-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 2px rgba(61, 220, 151, 0.3);
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35);
   }
   50% {
-    box-shadow: 0 0 0 5px rgba(61, 220, 151, 0.12);
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.12);
   }
 }
 
@@ -485,92 +630,281 @@ button {
     box-shadow: 0 0 0 0 rgba(244, 192, 79, 0.7);
   }
   100% {
-    box-shadow: 0 0 0 6px rgba(244, 192, 79, 0);
+    box-shadow: 0 0 0 8px rgba(244, 192, 79, 0);
   }
 }
 
-.seat__cards {
-  display: flex;
-  gap: 2px;
-}
-
 .avatar {
-  width: 22px;
-  height: 22px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.seat__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
 }
 
 .seat__name-row {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-weight: 600;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .seat__stack {
-  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 11px;
 }
 
 .seat__action {
-  color: var(--text-dim);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .badge {
   font-size: 9px;
-  background: var(--border);
+  font-weight: 700;
+  background: var(--border-strong);
+  color: var(--text-dim);
   border-radius: 4px;
-  padding: 1px 4px;
+  padding: 1px 5px;
+  flex-shrink: 0;
 }
 
 .badge--dealer {
   background: var(--accent);
-  color: #06281c;
+  color: #06210f;
 }
 
 .badge--bot {
   background: #4a4f57;
+  color: var(--text);
 }
 
 .seat__bet {
   position: absolute;
-  bottom: -18px;
+  bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
-  background: #0a0a0a;
-  color: var(--accent);
-  border-radius: 10px;
-  padding: 1px 8px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 2px 9px;
   font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /* ---------- Панель действий ---------- */
 
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
 .action-bar {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
+  align-items: center;
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
 }
+
+.action-bar--idle {
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 13px;
+  width: 100%;
+}
+
+.action-bar__buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.bet-panel {
+  flex: 1;
+  min-width: 280px;
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-fill-strong);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.action-btn:hover {
+  filter: brightness(1.2);
+}
+
+.action-btn:active {
+  transform: scale(0.97);
+}
+
+.action-btn--fold {
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.action-btn--call {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06210f;
+}
+
+.action-btn--raise {
+  color: var(--accent);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.bet-control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.bet-control__label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bet-control__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepper-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-fill-strong);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.stepper-btn:hover {
+  filter: brightness(1.25);
+}
+
+.bet-control input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+  min-width: 100px;
+}
+
+.bet-control__amount {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 96px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-fill);
+  color: var(--text);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.bet-control__amount input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 0;
+}
+
+.bet-control__amount input:focus {
+  outline: none;
+}
+
+.bet-control__minmax {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.action-bar__quick {
+  display: flex;
+  gap: 4px;
+}
+
+.quick-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.quick-chip:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+/* ---------- Докупка / выбывание / победа в турнире ---------- */
 
 .rebuy-banner {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius);
-  padding: 16px;
+  border-color: var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 18px;
   text-align: center;
 }
 
@@ -580,7 +914,7 @@ button {
 }
 
 .rebuy-banner--gold {
-  border-color: #f4c04f;
+  border-color: var(--gold);
 }
 
 .rebuy-banner--gold p {
@@ -588,82 +922,23 @@ button {
   font-size: 16px;
 }
 
-.action-bar--idle {
-  text-align: center;
+/* ---------- История раздач / честность ---------- */
+
+.panel-collapsible {
+  font-size: 12px;
   color: var(--text-dim);
+  border-radius: var(--radius);
+  padding: 10px 14px;
 }
 
-.action-bar__buttons {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-.action-bar__raise {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.action-bar__raise input[type="range"] {
-  flex: 1;
-  min-width: 120px;
-}
-
-.action-bar__amount {
-  width: 80px;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg);
+.panel-collapsible summary {
+  cursor: pointer;
+  font-weight: 600;
   color: var(--text);
 }
 
-.action-bar__quick {
-  display: flex;
-  gap: 4px;
-}
-
-/* ---------- Честность раздачи ---------- */
-
-.fairness {
-  font-size: 12px;
-  color: var(--text-dim);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 8px 12px;
-}
-
-.fairness__body {
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  word-break: break-all;
-}
-
-.fairness code {
-  background: var(--bg);
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-
-/* ---------- История раздач ---------- */
-
-.history {
-  font-size: 12px;
-  color: var(--text-dim);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 8px 12px;
-}
-
 .history__list {
-  margin-top: 8px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -673,7 +948,7 @@ button {
 
 .history__item {
   border-top: 1px solid var(--border);
-  padding-top: 6px;
+  padding-top: 8px;
 }
 
 .history__header {
@@ -698,15 +973,66 @@ button {
   color: var(--text-dim);
 }
 
-@media (max-width: 480px) {
+.fairness__body {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  word-break: break-all;
+}
+
+.fairness code {
+  background: var(--bg-input);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+@media (max-width: 560px) {
+  .felt {
+    aspect-ratio: 3 / 4;
+  }
+  /* На узком экране 6 мест вокруг овала перекрываются, если показывать
+     полное имя — оставляем только аватар и стек, "вы" видно по позиции
+     (ваше место всегда внизу по центру). */
   .seat {
-    min-width: 90px;
-    padding: 4px 6px;
+    min-width: 0;
+    gap: 0;
+    padding: 2px;
+  }
+  .seat__name-row,
+  .badge {
+    display: none;
+  }
+  .seat__info {
+    padding-right: 7px;
+  }
+  .seat__stack {
+    font-size: 9px;
+  }
+  .seat--empty {
+    font-size: 9px;
+    padding: 5px 8px;
+  }
+  .avatar {
+    width: 24px;
+    height: 24px;
     font-size: 10px;
   }
   .card {
-    width: 30px;
-    height: 42px;
-    font-size: 12px;
+    width: 32px;
+    height: 44px;
+    font-size: 13px;
+  }
+  .card--small {
+    width: 22px;
+    height: 32px;
+    font-size: 10px;
+  }
+  .action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .action-bar__buttons {
+    justify-content: center;
   }
 }

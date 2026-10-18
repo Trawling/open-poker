@@ -38,7 +38,7 @@ export function IdentityPanel() {
   }
 
   return (
-    <div className="identity-panel">
+    <div className="identity-panel glass">
       <div className="identity-panel__row">
         <code className="identity-panel__code">{code}</code>
         <button className="btn btn--ghost btn--small" onClick={handleCopy}>

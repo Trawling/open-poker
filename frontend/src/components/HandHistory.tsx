@@ -5,7 +5,7 @@ export function HandHistory({ hands }: { hands: HandHistoryEntry[] }) {
   if (hands.length === 0) return null;
 
   return (
-    <details className="history">
+    <details className="panel-collapsible glass">
       <summary>История раздач ({hands.length})</summary>
       <div className="history__list">
         {hands.map((hand) => (
