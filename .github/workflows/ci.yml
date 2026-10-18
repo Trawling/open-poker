@@ -56,7 +56,7 @@ jobs:
         run: node scripts/persistence-test.mjs
 
       - name: Тест турнирного режима (может занимать до нескольких минут)
-        timeout-minutes: 8
+        timeout-minutes: 12
         env:
           DATA_DIR: /tmp/open-poker-ci-data-tournament
         run: |

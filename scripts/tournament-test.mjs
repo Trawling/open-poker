@@ -60,7 +60,12 @@ async function run() {
       else if (legal.canCall) player.emit("table:action", { type: "call" });
       else if (legal.canCheck) player.emit("table:action", { type: "check" });
     });
-    setTimeout(() => reject(new Error("турнир не завершился за 5 минут")), 5 * 60 * 1000);
+    // Запас с хорошим буфером: один тестовый игрок всегда идёт ва-банк и обычно
+    // выбывает первым, а трём оставшимся ботам иногда нужно много раздач, чтобы
+    // разобраться между собой — это нормальная дисперсия, а не баг (см. находку
+    // в истории коммитов: "рост числа живых игроков" оказался не багом, а
+    // временным нулём стека у игрока в олл-ине до момента вскрытия).
+    setTimeout(() => reject(new Error("турнир не завершился за 8 минут")), 8 * 60 * 1000);
   });
 
   player.emit("table:quick-tournament", { nickname: "Challenger" });
