@@ -1,0 +1,155 @@
+{
+  "home": {
+    "subtitle": "Free poker, no ads, no money. Open source. Just open it and play.",
+    "nicknamePlaceholder": "Your nickname (optional)",
+    "cashGameTitle": "Cash game",
+    "quickPlay": "Quick play",
+    "createTable": "Create a table for friends",
+    "tournamentTitle": "🏆 Tournament",
+    "tournamentHint": "No rebuys, blinds rise — last one standing wins.",
+    "quickTournament": "Quick tournament",
+    "createTournament": "Tournament for friends",
+    "note": "No sign-up. Chips are virtual and worth nothing — it's just a game.",
+    "sourceLink": "Source code on GitHub",
+    "footerTagline": "AGPL-3.0 · free and ad-free forever"
+  },
+  "stakes": {
+    "low": "Low ({{small}}/{{big}})",
+    "mid": "Medium ({{small}}/{{big}})",
+    "high": "High ({{small}}/{{big}})"
+  },
+  "table": {
+    "connecting": "Connecting to the table…",
+    "leaveTitle": "Leave",
+    "tournamentPrefix": "🏆 Tournament · ",
+    "blinds": "blinds {{small}}/{{big}}",
+    "yourStack": "Your stack",
+    "soundTitle": "Sound",
+    "copyLinkTitle": "Copy table link",
+    "addBotTitle": "Add a bot",
+    "timeLeft": "{{seconds}}s left to act",
+    "tournamentFinished": "🏆 Tournament finished! Winner: <strong>{{nickname}}</strong>",
+    "backToHome": "Back to home",
+    "eliminatedMessage": "You're out of the tournament — no rebuys in this format. Good luck next time!",
+    "bustedOutMessage": "You're out of chips — no worries, they're virtual and free.",
+    "rebuyButton": "Rebuy {{amount}} chips",
+    "potLabel": "Pot: {{amount}}",
+    "winnerLine": "{{nickname}} wins {{amount}}",
+    "handHistory": {
+      "summary": "Hand history ({{count}})",
+      "handNumber": "Hand #{{number}}",
+      "pot": "pot {{amount}}",
+      "winnerLine": "{{nickname}} +{{amount}}"
+    },
+    "fairness": {
+      "summary": "Fairness of hand #{{number}}",
+      "hashIntro": "The server seed hash is published <strong>before</strong> the hand — it can't be changed after the fact:",
+      "seedRevealed": "The server seed is revealed after the hand for verification:",
+      "clientSeed": "Client seed:"
+    }
+  },
+  "action": {
+    "waiting": "Waiting for your turn…",
+    "fold": "Fold",
+    "check": "Check",
+    "call": "Call {{amount}}",
+    "bet": "Bet {{amount}}",
+    "raise": "Raise {{amount}}",
+    "betAmountLabel": "Bet amount",
+    "less": "Less",
+    "more": "More",
+    "min": "Min: {{amount}}",
+    "max": "Max: {{amount}}",
+    "pot": "Pot",
+    "allIn": "All-in"
+  },
+  "seat": {
+    "empty": "open seat",
+    "youSuffix": " (you)",
+    "botBadge": "bot",
+    "action": {
+      "fold": "Fold",
+      "check": "Check",
+      "call": "Call",
+      "bet": "Bet",
+      "raise": "Raise"
+    }
+  },
+  "street": {
+    "preflop": "Preflop",
+    "flop": "Flop",
+    "turn": "Turn",
+    "river": "River",
+    "showdown": "Showdown"
+  },
+  "hand": {
+    "high_card": "High card",
+    "pair": "Pair",
+    "two_pair": "Two pair",
+    "trips": "Three of a kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "full_house": "Full house",
+    "quads": "Four of a kind",
+    "straight_flush": "Straight flush",
+    "unknown": "Unknown"
+  },
+  "chat": {
+    "title": "Table chat",
+    "closeAria": "Close chat",
+    "empty": "It's quiet here — be the first to say something.",
+    "placeholder": "Message…",
+    "sendAria": "Send"
+  },
+  "stats": {
+    "toggle": "My stats",
+    "loading": "Loading…",
+    "loadError": "Couldn't load stats. Try again later.",
+    "handsPlayed": "Hands played: {{count}}",
+    "handsWon": "Hands won: {{count}}",
+    "chipsWon": "Total chips won: {{count}}",
+    "biggestPot": "Biggest pot won: {{amount}}",
+    "tournamentsPlayed": "Tournaments played: {{count}}",
+    "tournamentsWon": "Tournaments won: {{count}}",
+    "hide": "Hide"
+  },
+  "identity": {
+    "toggle": "My code to sign in on another device",
+    "copied": "Copied",
+    "copy": "Copy",
+    "hint": "Enter this code on another device to continue with the same stack. It's not a password — keep it like an invite link, not a secret.",
+    "importPlaceholder": "Paste code from another device",
+    "importButton": "Sign in"
+  },
+  "server": {
+    "toggle": "⚙️ Server address",
+    "title": "Server address",
+    "hint": "Open Poker is self-hosted: the app isn't tied to any one server. Point it at your own (see docs/04-deploy.md), for example <code>{{example}}</code>.",
+    "saved": "Saved, restarting…",
+    "save": "Save and restart",
+    "cancel": "Cancel"
+  },
+  "lang": {
+    "toggleTitle": "Language / Язык"
+  },
+  "errors": {
+    "NO_FREE_SEAT": "There are no free seats at the table.",
+    "SEAT_TAKEN": "That seat is already taken.",
+    "PLAYER_NOT_AT_TABLE": "You're not seated at this table.",
+    "REBUY_NOT_ALLOWED_ENOUGH_CHIPS": "Rebuy is only available when your stack is too low to play.",
+    "NO_SUITABLE_SEAT": "No suitable seat was found.",
+    "NOT_ENOUGH_PLAYERS": "Not enough players to start a hand.",
+    "NOT_YOUR_TURN": "It's not your turn.",
+    "CANNOT_CHECK_FACING_BET": "You can't check — there's a bet to call.",
+    "UNKNOWN_ACTION": "Unknown action: {{actionType}}",
+    "BET_EXISTS_USE_RAISE": "There's already a bet this street — use raise.",
+    "NO_BET_USE_BET": "No bet yet — use bet.",
+    "MIN_AMOUNT": "Minimum amount: {{minTo}}",
+    "REBUY_TOURNAMENT_ELIMINATED": "Rebuy isn't available in tournaments — once you're out, you're out.",
+    "REBUY_UNAVAILABLE": "Rebuy unavailable.",
+    "INVALID_ACTION": "Invalid action.",
+    "TABLE_NOT_FOUND": "Table not found. It may have already closed.",
+    "NOT_AT_TABLE": "You're not seated at a table.",
+    "unknown": "Something went wrong. Please try again."
+  }
+}

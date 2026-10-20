@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getGuestId, setGuestId } from "../lib/identity";
 
 /**
@@ -7,6 +8,7 @@ import { getGuestId, setGuestId } from "../lib/identity";
  * на тех же столах. Это удобство, а не защита — код не секретнее ссылки.
  */
 export function IdentityPanel() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [importValue, setImportValue] = useState("");
   const [copied, setCopied] = useState(false);
@@ -32,7 +34,7 @@ export function IdentityPanel() {
   if (!open) {
     return (
       <button className="btn btn--ghost btn--small identity-toggle" onClick={() => setOpen(true)}>
-        Мой код для входа с другого устройства
+        {t("identity.toggle")}
       </button>
     );
   }
@@ -42,22 +44,19 @@ export function IdentityPanel() {
       <div className="identity-panel__row">
         <code className="identity-panel__code">{code}</code>
         <button className="btn btn--ghost btn--small" onClick={handleCopy}>
-          {copied ? "Скопировано" : "Копировать"}
+          {copied ? t("identity.copied") : t("identity.copy")}
         </button>
       </div>
-      <p className="identity-panel__hint">
-        Введите этот код на другом устройстве, чтобы продолжить с тем же стеком.
-        Это не пароль — храните как ссылку-приглашение, не как секрет.
-      </p>
+      <p className="identity-panel__hint">{t("identity.hint")}</p>
       <div className="identity-panel__row">
         <input
           className="identity-panel__input"
-          placeholder="Вставить код с другого устройства"
+          placeholder={t("identity.importPlaceholder") ?? undefined}
           value={importValue}
           onChange={(e) => setImportValue(e.target.value)}
         />
         <button className="btn btn--small" onClick={handleImport}>
-          Войти
+          {t("identity.importButton")}
         </button>
       </div>
     </div>

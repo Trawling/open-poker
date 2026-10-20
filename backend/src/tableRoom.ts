@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { PokerTable } from "@open-poker/engine";
+import { PokerTable, TableError } from "@open-poker/engine";
 import type { ActionInput, TableConfig } from "@open-poker/engine";
 import type { Server } from "socket.io";
 import { decideBotAction } from "./bot.js";
-import { generateBotNickname } from "./names.js";
+import { generateBotNickname, type Lang } from "./names.js";
 import type {
   ChatMessage,
   ClientToServerEvents,
@@ -64,7 +64,14 @@ export class TableRoom {
   /** Чат стола — не переживает перезапуск сервера, как и история раздач. */
   private chatHistory: ChatMessage[] = [];
 
-  constructor(id: string, config: TableConfig, io: AppServer, isPublic: boolean, isTournament = false) {
+  constructor(
+    id: string,
+    config: TableConfig,
+    io: AppServer,
+    isPublic: boolean,
+    isTournament = false,
+    private readonly lang: Lang = "ru",
+  ) {
     this.id = id;
     this.table = new PokerTable(config);
     this.io = io;
@@ -114,13 +121,15 @@ export class TableRoom {
   /** Докупка фишек для игрока, у которого их не осталось — см. PokerTable.rebuy. */
   rebuy(playerId: string): void {
     if (this.isTournament) {
-      this.emitError(playerId, "В турнире докупка недоступна — выбыл, значит выбыл.");
+      this.emitError(playerId, "REBUY_TOURNAMENT_ELIMINATED");
       return;
     }
     try {
       this.table.rebuy(playerId, this.table.config.startingStack);
     } catch (err) {
-      this.emitError(playerId, err instanceof Error ? err.message : "Докупка недоступна");
+      const code = err instanceof TableError ? err.code : "REBUY_UNAVAILABLE";
+      const params = err instanceof TableError ? err.params : undefined;
+      this.emitError(playerId, code, params);
       return;
     }
     this.broadcast();
@@ -153,7 +162,7 @@ export class TableRoom {
   addBot(): void {
     if (!this.hasFreeSeat()) return;
     const usedNames = new Set([...this.connections.values()].map((c) => c.nickname));
-    const nickname = generateBotNickname(usedNames);
+    const nickname = generateBotNickname(usedNames, this.lang);
     const botId = `bot-${Math.random().toString(36).slice(2, 10)}`;
     this.table.sitDown({ id: botId, nickname, isBot: true });
     this.connections.set(botId, { nickname, isBot: true, socketId: null });
@@ -232,7 +241,9 @@ export class TableRoom {
     try {
       this.table.applyAction(playerId, action);
     } catch (err) {
-      this.emitError(playerId, err instanceof Error ? err.message : "Недопустимое действие");
+      const code = err instanceof TableError ? err.code : "INVALID_ACTION";
+      const params = err instanceof TableError ? err.params : undefined;
+      this.emitError(playerId, code, params);
       this.scheduleNextActor();
       return;
     }
@@ -424,10 +435,10 @@ export class TableRoom {
     this.afterAction();
   }
 
-  private emitError(playerId: string, message: string): void {
+  private emitError(playerId: string, code: string, params?: Record<string, string | number>): void {
     const conn = this.connections.get(playerId);
     if (conn?.socketId) {
-      this.io.to(conn.socketId).emit("table:error", { message });
+      this.io.to(conn.socketId).emit("table:error", { code, params });
     }
   }
 

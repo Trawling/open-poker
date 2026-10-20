@@ -1,4 +1,5 @@
 import { createDeck, generateServerSeed, hashServerSeed, shuffleDeck } from "./deck.js";
+import { TableError } from "./errors.js";
 import { compareHandScores, describeHandScore, evaluate7 } from "./handEvaluator.js";
 import type {
   ActionInput,
@@ -64,8 +65,8 @@ export class PokerTable {
 
   sitDown(params: { id: string; nickname: string; isBot?: boolean; seatIndex?: number }): number {
     const seatIndex = params.seatIndex ?? this.findFreeSeat();
-    if (seatIndex === null) throw new Error("Нет свободных мест за столом");
-    if (this.seats[seatIndex] !== null) throw new Error("Место уже занято");
+    if (seatIndex === null) throw new TableError("NO_FREE_SEAT", "No free seats at the table.");
+    if (this.seats[seatIndex] !== null) throw new TableError("SEAT_TAKEN", "Seat is already taken.");
     this.seats[seatIndex] = {
       id: params.id,
       nickname: params.nickname,
@@ -90,7 +91,7 @@ export class PokerTable {
    * раздачи, вызывать только пока раздача не идёт.
    */
   restoreSeat(seatIndex: number, params: { id: string; nickname: string; stack: number; isBot: boolean }) {
-    if (this.seats[seatIndex] !== null) throw new Error("Место уже занято");
+    if (this.seats[seatIndex] !== null) throw new TableError("SEAT_TAKEN", "Seat is already taken.");
     this.seats[seatIndex] = {
       id: params.id,
       nickname: params.nickname,
@@ -116,10 +117,13 @@ export class PokerTable {
    */
   rebuy(playerId: string, stack: number): void {
     const seatIndex = this.seats.findIndex((s) => s?.id === playerId);
-    if (seatIndex === -1) throw new Error("Игрок не за этим столом");
+    if (seatIndex === -1) throw new TableError("PLAYER_NOT_AT_TABLE", "You are not seated at this table.");
     const seat = this.seats[seatIndex]!;
     if (seat.stack >= this.config.bigBlind) {
-      throw new Error("Докупка доступна только когда фишек недостаточно для игры");
+      throw new TableError(
+        "REBUY_NOT_ALLOWED_ENOUGH_CHIPS",
+        "Rebuy is only available when your stack is too low to play.",
+      );
     }
     seat.stack = stack;
     seat.sittingOut = false;
@@ -176,7 +180,7 @@ export class PokerTable {
       const idx = (from + step) % n;
       if (predicate(idx)) return idx;
     }
-    throw new Error("Не найдено подходящее место");
+    throw new TableError("NO_SUITABLE_SEAT", "No suitable seat found.");
   }
 
   // ---------------------------------------------------------------------
@@ -185,7 +189,7 @@ export class PokerTable {
 
   startHand(): void {
     if (!this.canStartHand()) {
-      throw new Error("Недостаточно игроков для начала раздачи");
+      throw new TableError("NOT_ENOUGH_PLAYERS", "Not enough players to start a hand.");
     }
     this.handNumber += 1;
     this.winners = null;
@@ -360,8 +364,8 @@ export class PokerTable {
 
   applyAction(playerId: string, action: ActionInput): HandEvent[] {
     const seatIndex = this.seats.findIndex((s) => s?.id === playerId);
-    if (seatIndex === -1) throw new Error("Игрок не за этим столом");
-    if (this.actingSeatIndex !== seatIndex) throw new Error("Сейчас не ваш ход");
+    if (seatIndex === -1) throw new TableError("PLAYER_NOT_AT_TABLE", "You are not seated at this table.");
+    if (this.actingSeatIndex !== seatIndex) throw new TableError("NOT_YOUR_TURN", "It's not your turn.");
     const player = this.seats[seatIndex]!;
     const startEventIndex = this.events.length;
 
@@ -371,7 +375,9 @@ export class PokerTable {
         break;
       case "check": {
         const toCall = this.currentBetStreet - player.contributedStreet;
-        if (toCall !== 0) throw new Error("Нельзя сделать чек: есть неуравненная ставка");
+        if (toCall !== 0) {
+          throw new TableError("CANNOT_CHECK_FACING_BET", "You can't check — there's a bet to call.");
+        }
         player.lastAction = "check";
         this.log({ type: "action", seatIndex, action: "check" });
         this.toActOrder.shift();
@@ -387,7 +393,7 @@ export class PokerTable {
         this.handleBetOrRaise(seatIndex, action.amount ?? 0, "raise");
         break;
       default:
-        throw new Error(`Неизвестное действие: ${action.type}`);
+        throw new TableError("UNKNOWN_ACTION", `Unknown action: ${action.type}`, { actionType: action.type });
     }
 
     this.afterAction();
@@ -422,16 +428,16 @@ export class PokerTable {
     const effectiveTo = isAllIn ? maxTo : amountTo;
 
     if (kind === "bet" && this.currentBetStreet !== 0) {
-      throw new Error("Уже есть ставка на этой улице — используйте raise");
+      throw new TableError("BET_EXISTS_USE_RAISE", "There's already a bet this street — use raise.");
     }
     if (kind === "raise" && this.currentBetStreet === 0) {
-      throw new Error("Ставок ещё нет — используйте bet");
+      throw new TableError("NO_BET_USE_BET", "No bet yet — use bet.");
     }
     const minTo = kind === "bet"
       ? Math.min(this.config.bigBlind, maxTo)
       : Math.min(this.currentBetStreet + this.minRaiseIncrement, maxTo);
     if (!isAllIn && effectiveTo < minTo) {
-      throw new Error(`Минимальная сумма: ${minTo}`);
+      throw new TableError("MIN_AMOUNT", `Minimum amount: ${minTo}`, { minTo });
     }
 
     const increment = effectiveTo - this.currentBetStreet;

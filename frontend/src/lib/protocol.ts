@@ -56,7 +56,8 @@ export interface ClientToServerEvents {
 export interface ServerToClientEvents {
   "table:joined": (payload: { tableId: string; playerId: string; seatIndex: number }) => void;
   "table:state": (payload: PersonalTableState) => void;
-  "table:error": (payload: { message: string }) => void;
+  /** `code` переводится через i18n (ключ `errors.<code>`), см. lib/i18nErrors.ts. */
+  "table:error": (payload: { code: string; params?: Record<string, string | number> }) => void;
   "table:chat": (payload: ChatMessage) => void;
 }
 

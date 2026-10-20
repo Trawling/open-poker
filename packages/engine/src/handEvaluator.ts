@@ -16,16 +16,21 @@ const RANK_VALUE: Record<string, number> = {
   A: 14,
 };
 
-export const HAND_CATEGORY_NAMES = [
-  "Старшая карта",
-  "Пара",
-  "Две пары",
-  "Сет",
-  "Стрит",
-  "Флеш",
-  "Фулл-хаус",
-  "Каре",
-  "Стрит-флеш",
+/**
+ * Машинно-читаемые коды категорий — никакого человеческого текста тут
+ * нет специально: движок не должен знать язык клиента, перевод делает
+ * фронтенд (см. frontend/src/i18n, ключи hand.<код>).
+ */
+export const HAND_CATEGORY_CODES = [
+  "high_card",
+  "pair",
+  "two_pair",
+  "trips",
+  "straight",
+  "flush",
+  "full_house",
+  "quads",
+  "straight_flush",
 ] as const;
 
 /**
@@ -121,5 +126,5 @@ export function evaluate7(cards: Card[]): number[] {
 }
 
 export function describeHandScore(score: number[]): string {
-  return HAND_CATEGORY_NAMES[score[0]] ?? "Неизвестно";
+  return HAND_CATEGORY_CODES[score[0]] ?? "unknown";
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getBackendOrigin } from "../lib/backend";
 import { getGuestId } from "../lib/identity";
 
@@ -14,6 +15,7 @@ interface PlayerStats {
 
 /** Статистика привязана к коду личности (см. IdentityPanel) — не к реальному аккаунту. */
 export function StatsPanel() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [stats, setStats] = useState<PlayerStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -25,11 +27,11 @@ export function StatsPanel() {
     setError(null);
     try {
       const res = await fetch(`${getBackendOrigin()}/api/stats/${getGuestId()}`);
-      if (!res.ok) throw new Error("Не удалось загрузить статистику");
+      if (!res.ok) throw new Error("Failed to load stats");
       const data = (await res.json()) as PlayerStats;
       setStats(data);
     } catch {
-      setError("Не удалось загрузить статистику. Попробуйте позже.");
+      setError(t("stats.loadError"));
     } finally {
       setLoading(false);
     }
@@ -38,27 +40,27 @@ export function StatsPanel() {
   if (!open) {
     return (
       <button className="btn btn--ghost btn--small identity-toggle" onClick={handleOpen}>
-        Моя статистика
+        {t("stats.toggle")}
       </button>
     );
   }
 
   return (
     <div className="identity-panel glass">
-      {loading && <p className="identity-panel__hint">Загружаем…</p>}
+      {loading && <p className="identity-panel__hint">{t("stats.loading")}</p>}
       {error && <p className="identity-panel__hint">{error}</p>}
       {stats && (
         <ul className="stats-list">
-          <li>Раздач сыграно: {stats.handsPlayed}</li>
-          <li>Раздач выиграно: {stats.handsWon}</li>
-          <li>Выиграно фишек всего: {stats.chipsWon}</li>
-          <li>Самый большой банк: {stats.biggestPotWon}</li>
-          <li>Турниров сыграно: {stats.tournamentsPlayed}</li>
-          <li>Турниров выиграно: {stats.tournamentsWon}</li>
+          <li>{t("stats.handsPlayed", { count: stats.handsPlayed })}</li>
+          <li>{t("stats.handsWon", { count: stats.handsWon })}</li>
+          <li>{t("stats.chipsWon", { count: stats.chipsWon })}</li>
+          <li>{t("stats.biggestPot", { amount: stats.biggestPotWon })}</li>
+          <li>{t("stats.tournamentsPlayed", { count: stats.tournamentsPlayed })}</li>
+          <li>{t("stats.tournamentsWon", { count: stats.tournamentsWon })}</li>
         </ul>
       )}
       <button className="btn btn--ghost btn--small" onClick={() => setOpen(false)}>
-        Скрыть
+        {t("stats.hide")}
       </button>
     </div>
   );

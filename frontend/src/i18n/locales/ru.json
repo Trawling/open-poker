@@ -1,0 +1,155 @@
+{
+  "home": {
+    "subtitle": "Бесплатный покер без рекламы и без денег. Открытый код. Зашёл — и сразу играешь.",
+    "nicknamePlaceholder": "Ваш ник (необязательно)",
+    "cashGameTitle": "Кэш-игра",
+    "quickPlay": "Быстрая игра",
+    "createTable": "Создать стол для друзей",
+    "tournamentTitle": "🏆 Турнир",
+    "tournamentHint": "Без докупки, блайнды растут — игра до последнего.",
+    "quickTournament": "Быстрый турнир",
+    "createTournament": "Турнир для друзей",
+    "note": "Без регистрации. Фишки виртуальные и ничего не стоят — это просто игра.",
+    "sourceLink": "Исходный код на GitHub",
+    "footerTagline": "AGPL-3.0 · бесплатно и без рекламы навсегда"
+  },
+  "stakes": {
+    "low": "Низкие ({{small}}/{{big}})",
+    "mid": "Средние ({{small}}/{{big}})",
+    "high": "Высокие ({{small}}/{{big}})"
+  },
+  "table": {
+    "connecting": "Подключаемся к столу…",
+    "leaveTitle": "Выйти",
+    "tournamentPrefix": "🏆 Турнир · ",
+    "blinds": "блайнды {{small}}/{{big}}",
+    "yourStack": "Ваш стек",
+    "soundTitle": "Звук",
+    "copyLinkTitle": "Скопировать ссылку на стол",
+    "addBotTitle": "Добавить бота",
+    "timeLeft": "Осталось {{seconds}} с на ход",
+    "tournamentFinished": "🏆 Турнир завершён! Победитель: <strong>{{nickname}}</strong>",
+    "backToHome": "Вернуться на главную",
+    "eliminatedMessage": "Вы выбыли из турнира — в этом формате без докупки. Удачи в следующий раз!",
+    "bustedOutMessage": "Фишки закончились — это не страшно, они виртуальные и бесплатные.",
+    "rebuyButton": "Докупить {{amount}} фишек",
+    "potLabel": "Банк: {{amount}}",
+    "winnerLine": "{{nickname}} выигрывает {{amount}}",
+    "handHistory": {
+      "summary": "История раздач ({{count}})",
+      "handNumber": "Раздача №{{number}}",
+      "pot": "банк {{amount}}",
+      "winnerLine": "{{nickname}} +{{amount}}"
+    },
+    "fairness": {
+      "summary": "Честность раздачи №{{number}}",
+      "hashIntro": "Хэш server seed опубликован <strong>до</strong> раздачи — его нельзя подменить задним числом:",
+      "seedRevealed": "Server seed раскрыт после завершения раздачи для проверки:",
+      "clientSeed": "Client seed:"
+    }
+  },
+  "action": {
+    "waiting": "Ожидайте своего хода…",
+    "fold": "Фолд",
+    "check": "Чек",
+    "call": "Колл {{amount}}",
+    "bet": "Ставка {{amount}}",
+    "raise": "Рейз {{amount}}",
+    "betAmountLabel": "Сумма ставки",
+    "less": "Меньше",
+    "more": "Больше",
+    "min": "Min: {{amount}}",
+    "max": "Max: {{amount}}",
+    "pot": "Пот",
+    "allIn": "Олл-ин"
+  },
+  "seat": {
+    "empty": "свободно",
+    "youSuffix": " (вы)",
+    "botBadge": "бот",
+    "action": {
+      "fold": "Фолд",
+      "check": "Чек",
+      "call": "Колл",
+      "bet": "Ставка",
+      "raise": "Рейз"
+    }
+  },
+  "street": {
+    "preflop": "Префлоп",
+    "flop": "Флоп",
+    "turn": "Тёрн",
+    "river": "Ривер",
+    "showdown": "Вскрытие"
+  },
+  "hand": {
+    "high_card": "Старшая карта",
+    "pair": "Пара",
+    "two_pair": "Две пары",
+    "trips": "Сет",
+    "straight": "Стрит",
+    "flush": "Флеш",
+    "full_house": "Фулл-хаус",
+    "quads": "Каре",
+    "straight_flush": "Стрит-флеш",
+    "unknown": "Неизвестно"
+  },
+  "chat": {
+    "title": "Чат стола",
+    "closeAria": "Закрыть чат",
+    "empty": "Пока тихо — напишите первым.",
+    "placeholder": "Сообщение…",
+    "sendAria": "Отправить"
+  },
+  "stats": {
+    "toggle": "Моя статистика",
+    "loading": "Загружаем…",
+    "loadError": "Не удалось загрузить статистику. Попробуйте позже.",
+    "handsPlayed": "Раздач сыграно: {{count}}",
+    "handsWon": "Раздач выиграно: {{count}}",
+    "chipsWon": "Выиграно фишек всего: {{count}}",
+    "biggestPot": "Самый большой банк: {{amount}}",
+    "tournamentsPlayed": "Турниров сыграно: {{count}}",
+    "tournamentsWon": "Турниров выиграно: {{count}}",
+    "hide": "Скрыть"
+  },
+  "identity": {
+    "toggle": "Мой код для входа с другого устройства",
+    "copied": "Скопировано",
+    "copy": "Копировать",
+    "hint": "Введите этот код на другом устройстве, чтобы продолжить с тем же стеком. Это не пароль — храните как ссылку-приглашение, не как секрет.",
+    "importPlaceholder": "Вставить код с другого устройства",
+    "importButton": "Войти"
+  },
+  "server": {
+    "toggle": "⚙️ Адрес сервера",
+    "title": "Адрес сервера",
+    "hint": "Open Poker — self-hosted: приложение не привязано к чьему-то одному серверу. Укажите адрес своего (см. docs/04-deploy.md), например <code>{{example}}</code>.",
+    "saved": "Сохранено, перезапуск…",
+    "save": "Сохранить и перезапустить",
+    "cancel": "Отмена"
+  },
+  "lang": {
+    "toggleTitle": "Язык / Language"
+  },
+  "errors": {
+    "NO_FREE_SEAT": "За столом нет свободных мест.",
+    "SEAT_TAKEN": "Место уже занято.",
+    "PLAYER_NOT_AT_TABLE": "Вы не за этим столом.",
+    "REBUY_NOT_ALLOWED_ENOUGH_CHIPS": "Докупка доступна только когда фишек недостаточно для игры.",
+    "NO_SUITABLE_SEAT": "Не найдено подходящее место.",
+    "NOT_ENOUGH_PLAYERS": "Недостаточно игроков для начала раздачи.",
+    "NOT_YOUR_TURN": "Сейчас не ваш ход.",
+    "CANNOT_CHECK_FACING_BET": "Нельзя сделать чек: есть неуравненная ставка.",
+    "UNKNOWN_ACTION": "Неизвестное действие: {{actionType}}",
+    "BET_EXISTS_USE_RAISE": "Уже есть ставка на этой улице — используйте raise.",
+    "NO_BET_USE_BET": "Ставок ещё нет — используйте bet.",
+    "MIN_AMOUNT": "Минимальная сумма: {{minTo}}",
+    "REBUY_TOURNAMENT_ELIMINATED": "В турнире докупка недоступна — выбыл, значит выбыл.",
+    "REBUY_UNAVAILABLE": "Докупка недоступна.",
+    "INVALID_ACTION": "Недопустимое действие.",
+    "TABLE_NOT_FOUND": "Стол не найден. Возможно, он уже закрылся.",
+    "NOT_AT_TABLE": "Вы не за столом.",
+    "unknown": "Что-то пошло не так. Попробуйте ещё раз."
+  }
+}

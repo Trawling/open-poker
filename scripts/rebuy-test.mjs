@@ -25,7 +25,7 @@ async function run() {
   const bustedAndRecovered = new Promise((resolve, reject) => {
     for (const [name, socket] of [["Alice", alice], ["Bob", bob]]) {
       let lastActedKey = null;
-      socket.on("table:error", (e) => console.error(`[${name}] ошибка:`, e.message));
+      socket.on("table:error", (e) => console.error(`[${name}] ошибка:`, e.code, e.params ?? ""));
       socket.on("table:state", (state) => {
         const mySeat = state.seats.find((s) => s.seatIndex === state.yourSeatIndex);
         if (!mySeat) return;

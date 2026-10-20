@@ -1,5 +1,6 @@
 import { Send, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { ChatMessage } from "../lib/protocol";
 
 export function ChatPanel({
@@ -13,6 +14,7 @@ export function ChatPanel({
   onClose: () => void;
   onSend: (text: string) => void;
 }) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -30,13 +32,13 @@ export function ChatPanel({
   return (
     <div className="chat-panel glass">
       <div className="chat-panel__header">
-        <span>Чат стола</span>
-        <button className="btn btn--ghost btn--icon" onClick={onClose} aria-label="Закрыть чат">
+        <span>{t("chat.title")}</span>
+        <button className="btn btn--ghost btn--icon" onClick={onClose} aria-label={t("chat.closeAria") ?? undefined}>
           <X size={15} />
         </button>
       </div>
       <div className="chat-panel__list" ref={listRef}>
-        {messages.length === 0 && <p className="chat-panel__empty">Пока тихо — напишите первым.</p>}
+        {messages.length === 0 && <p className="chat-panel__empty">{t("chat.empty")}</p>}
         {messages.map((m) => (
           <div
             key={m.id}
@@ -50,7 +52,7 @@ export function ChatPanel({
       <div className="chat-panel__input-row">
         <input
           className="chat-panel__input"
-          placeholder="Сообщение…"
+          placeholder={t("chat.placeholder") ?? undefined}
           value={text}
           maxLength={240}
           onChange={(e) => setText(e.target.value)}
@@ -58,7 +60,7 @@ export function ChatPanel({
             if (e.key === "Enter") handleSend();
           }}
         />
-        <button className="btn btn--primary btn--icon" onClick={handleSend} aria-label="Отправить">
+        <button className="btn btn--primary btn--icon" onClick={handleSend} aria-label={t("chat.sendAria") ?? undefined}>
           <Send size={15} />
         </button>
       </div>

@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { getBackendOverride, setBackendOverride } from "../lib/backend";
 
 /**
@@ -11,6 +12,7 @@ import { getBackendOverride, setBackendOverride } from "../lib/backend";
  * на нём, не завися от чьего-то одного центрального инстанса.
  */
 export function ServerSettings() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(getBackendOverride());
   const [saved, setSaved] = useState(false);
@@ -26,18 +28,20 @@ export function ServerSettings() {
   if (!open) {
     return (
       <button className="btn btn--ghost server-settings__toggle" onClick={() => setOpen(true)} type="button">
-        ⚙️ Адрес сервера
+        {t("server.toggle")}
       </button>
     );
   }
 
   return (
     <div className="server-settings glass">
-      <h3 className="server-settings__title">Адрес сервера</h3>
+      <h3 className="server-settings__title">{t("server.title")}</h3>
       <p className="server-settings__hint">
-        Open Poker — self-hosted: приложение не привязано к чьему-то одному серверу.
-        Укажите адрес своего (см. docs/04-deploy.md), например{" "}
-        <code>https://poker.example.com</code>.
+        <Trans
+          i18nKey="server.hint"
+          values={{ example: "https://poker.example.com" }}
+          components={{ code: <code /> }}
+        />
       </p>
       <input
         className="server-settings__input"
@@ -47,10 +51,10 @@ export function ServerSettings() {
       />
       <div className="server-settings__actions">
         <button className="btn btn--primary" onClick={handleSave} type="button">
-          {saved ? "Сохранено, перезапуск…" : "Сохранить и перезапустить"}
+          {saved ? t("server.saved") : t("server.save")}
         </button>
         <button className="btn btn--ghost" onClick={() => setOpen(false)} type="button">
-          Отмена
+          {t("server.cancel")}
         </button>
       </div>
     </div>

@@ -1,16 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { PersonalTableState } from "../lib/protocol";
 import { ChipIcon } from "./ChipIcon";
 import { PlayingCard } from "./Card";
 import { Seat } from "./Seat";
-
-const STREET_LABEL: Record<string, string> = {
-  preflop: "Префлоп",
-  flop: "Флоп",
-  turn: "Тёрн",
-  river: "Ривер",
-  showdown: "Вскрытие",
-};
 
 const SEAT_RADIUS_X = 43;
 const SEAT_RADIUS_Y = 39;
@@ -54,6 +47,7 @@ function FlyingChipDot({ from, to }: { from: Point; to: Point }) {
 }
 
 export function PokerTable({ state }: { state: PersonalTableState }) {
+  const { t } = useTranslation();
   const n = state.seats.length;
   const youIndex = state.yourSeatIndex ?? 0;
 
@@ -117,7 +111,7 @@ export function PokerTable({ state }: { state: PersonalTableState }) {
   return (
     <div className="felt" ref={feltRef}>
       <div className="felt__center">
-        <div className="felt__street">{STREET_LABEL[state.street] ?? state.street}</div>
+        <div className="felt__street">{t(`street.${state.street}`, state.street)}</div>
         <div className="felt__community">
           {Array.from({ length: 5 }).map((_, i) => (
             <PlayingCard
@@ -130,14 +124,17 @@ export function PokerTable({ state }: { state: PersonalTableState }) {
         </div>
         <div className="pot-pill glass" ref={potRef}>
           <ChipIcon size={13} />
-          Банк: {totalPot}
+          {t("table.potLabel", { amount: totalPot })}
         </div>
         {state.winners && state.winners.length > 0 && (
           <div className="felt__winners glass">
             {state.winners.map((w, i) => (
               <div key={i}>
-                {state.seats.find((s) => s.seatIndex === w.seatIndex)?.nickname} выигрывает {w.amount}
-                {w.handDescription ? ` (${w.handDescription})` : ""}
+                {t("table.winnerLine", {
+                  nickname: state.seats.find((s) => s.seatIndex === w.seatIndex)?.nickname,
+                  amount: w.amount,
+                })}
+                {w.handDescription ? ` (${t(`hand.${w.handDescription}`)})` : ""}
               </div>
             ))}
           </div>

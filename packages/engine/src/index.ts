@@ -1,4 +1,5 @@
 export * from "./types.js";
+export * from "./errors.js";
 export * from "./deck.js";
 export * from "./handEvaluator.js";
 export * from "./equity.js";

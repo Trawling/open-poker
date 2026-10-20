@@ -28,7 +28,7 @@ async function run() {
 
   for (const [name, socket] of [["Alice", alice], ["Bob", bob]]) {
     let lastActedKey = null;
-    socket.on("table:error", (e) => console.error(`[${name}] ошибка:`, e.message));
+    socket.on("table:error", (e) => console.error(`[${name}] ошибка:`, e.code, e.params ?? ""));
     socket.on("table:state", (state) => {
       if (state.winners && state.winners.length > 0) {
         console.log(`[${name}] раздача №${state.handNumber} завершена, победители:`, state.winners);

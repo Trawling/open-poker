@@ -1,4 +1,5 @@
 import { io, type Socket } from "socket.io-client";
+import i18n from "../i18n";
 import { getBackendOrigin } from "./backend";
 import { getGuestId, getNickname } from "./identity";
 import type { ClientToServerEvents, ServerToClientEvents } from "./protocol";
@@ -16,6 +17,9 @@ export function getSocket(): AppSocket {
       auth: {
         guestId: getGuestId(),
         nickname: getNickname(),
+        // Только для автосгенерированных ботов/гостевых ников на сервере
+        // (см. backend/src/names.ts) — не влияет на перевод самого UI.
+        lang: i18n.resolvedLanguage,
       },
     });
   }

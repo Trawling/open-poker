@@ -1,9 +1,11 @@
 import { Link2, LogOut, MessageCircle, UserPlus, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { ActionBar } from "../components/ActionBar";
 import { ChatPanel } from "../components/ChatPanel";
 import { ChipIcon } from "../components/ChipIcon";
 import { HandHistory } from "../components/HandHistory";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { PokerTable } from "../components/PokerTable";
 import { getNickname } from "../lib/identity";
 import type { ActionInput, ChatMessage, PersonalTableState } from "../lib/protocol";
@@ -24,6 +26,7 @@ function mergeChatMessages(existing: ChatMessage[], incoming: ChatMessage[]): Ch
 }
 
 export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () => void }) {
+  const { t } = useTranslation();
   const [state, setState] = useState<PersonalTableState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
@@ -54,8 +57,10 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
         playChatSound();
       }
     }
-    function handleError(payload: { message: string }) {
-      setError(payload.message);
+    function handleError(payload: { code: string; params?: Record<string, string | number> }) {
+      const key = `errors.${payload.code}`;
+      const text = t(key, payload.params);
+      setError(text === key ? t("errors.unknown") : text);
       setTimeout(() => setError(null), 4000);
     }
     function handleJoined(payload: { tableId: string }) {
@@ -143,7 +148,7 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
   }
 
   if (!state) {
-    return <div className="table-page table-page--loading">Подключаемся к столу…</div>;
+    return <div className="table-page table-page--loading">{t("table.connecting")}</div>;
   }
 
   const secondsLeft = state.turnDeadline ? Math.max(0, Math.ceil((state.turnDeadline - now) / 1000)) : null;
@@ -158,12 +163,12 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
     <div className="table-page">
       <header className="table-header">
         <div className="table-header__left">
-          <button className="btn btn--ghost btn--icon" onClick={handleLeave} title="Выйти">
+          <button className="btn btn--ghost btn--icon" onClick={handleLeave} title={t("table.leaveTitle") ?? undefined}>
             <LogOut size={16} />
           </button>
           <span className="badge-pill glass">
-            {state.isTournament ? "🏆 Турнир · " : ""}
-            блайнды {state.config.smallBlind}/{state.config.bigBlind}
+            {state.isTournament ? t("table.tournamentPrefix") : ""}
+            {t("table.blinds", { small: state.config.smallBlind, big: state.config.bigBlind })}
           </span>
         </div>
         <div className="table-header__right">
@@ -172,23 +177,24 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
               <ChipIcon size={20} />
               <div className="balance-pill__text">
                 <span className="balance-pill__amount">{mySeat.stack}</span>
-                <span className="balance-pill__label">Ваш стек</span>
+                <span className="balance-pill__label">{t("table.yourStack")}</span>
               </div>
             </div>
           )}
-          <button className="btn btn--ghost btn--icon" onClick={handleToggleSound} title="Звук">
+          <LanguageSwitcher />
+          <button className="btn btn--ghost btn--icon" onClick={handleToggleSound} title={t("table.soundTitle") ?? undefined}>
             {soundOn ? <Volume2 size={16} /> : <VolumeX size={16} />}
           </button>
-          <button className="btn btn--ghost btn--icon" onClick={handleCopyLink} title="Скопировать ссылку на стол">
+          <button className="btn btn--ghost btn--icon" onClick={handleCopyLink} title={t("table.copyLinkTitle") ?? undefined}>
             <Link2 size={16} />
           </button>
-          <button className="btn btn--ghost btn--icon" onClick={handleAddBot} title="Добавить бота">
+          <button className="btn btn--ghost btn--icon" onClick={handleAddBot} title={t("table.addBotTitle") ?? undefined}>
             <UserPlus size={16} />
           </button>
           <button
             className="btn btn--ghost btn--icon icon-badge"
             onClick={handleToggleChat}
-            title="Чат стола"
+            title={t("chat.title") ?? undefined}
           >
             <MessageCircle size={16} />
             {unreadCount > 0 && <span className="icon-badge__dot" />}
@@ -202,30 +208,34 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
         <PokerTable state={state} />
 
         {isYourTurn && secondsLeft !== null && (
-          <div className="turn-timer">Осталось {secondsLeft} с на ход</div>
+          <div className="turn-timer">{t("table.timeLeft", { seconds: secondsLeft })}</div>
         )}
 
         {state.tournamentWinner ? (
           <div className="rebuy-banner rebuy-banner--gold glass">
             <p>
-              🏆 Турнир завершён! Победитель: <strong>{state.tournamentWinner.nickname}</strong>
+              <Trans
+                i18nKey="table.tournamentFinished"
+                values={{ nickname: state.tournamentWinner.nickname }}
+                components={{ strong: <strong /> }}
+              />
             </p>
             <button className="btn btn--primary btn--big" onClick={handleLeave}>
-              Вернуться на главную
+              {t("table.backToHome")}
             </button>
           </div>
         ) : isEliminated ? (
           <div className="rebuy-banner glass">
-            <p>Вы выбыли из турнира — в этом формате без докупки. Удачи в следующий раз!</p>
+            <p>{t("table.eliminatedMessage")}</p>
             <button className="btn btn--ghost btn--big" onClick={handleLeave}>
-              Вернуться на главную
+              {t("table.backToHome")}
             </button>
           </div>
         ) : canRebuy ? (
           <div className="rebuy-banner glass">
-            <p>Фишки закончились — это не страшно, они виртуальные и бесплатные.</p>
+            <p>{t("table.bustedOutMessage")}</p>
             <button className="btn btn--primary btn--big" onClick={handleRebuy}>
-              Докупить {state.config.startingStack} фишек
+              {t("table.rebuyButton", { amount: state.config.startingStack })}
             </button>
           </div>
         ) : (
@@ -249,21 +259,24 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
 }
 
 function FairnessFooter({ state }: { state: PersonalTableState }) {
+  const { t } = useTranslation();
   return (
     <details className="panel-collapsible glass">
-      <summary>Честность раздачи №{state.handNumber}</summary>
+      <summary>{t("table.fairness.summary", { number: state.handNumber })}</summary>
       <div className="fairness__body">
         <p>
-          Хэш server seed опубликован <strong>до</strong> раздачи — его нельзя подменить задним числом:
+          <Trans i18nKey="table.fairness.hashIntro" components={{ strong: <strong /> }} />
         </p>
         <code>{state.serverSeedHash}</code>
         {state.revealedServerSeed && (
           <>
-            <p>Server seed раскрыт после завершения раздачи для проверки:</p>
+            <p>{t("table.fairness.seedRevealed")}</p>
             <code>{state.revealedServerSeed}</code>
           </>
         )}
-        <p>Client seed: <code>{state.clientSeed}</code></p>
+        <p>
+          {t("table.fairness.clientSeed")} <code>{state.clientSeed}</code>
+        </p>
       </div>
     </details>
   );

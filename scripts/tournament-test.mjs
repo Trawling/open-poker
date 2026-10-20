@@ -25,8 +25,8 @@ async function run() {
     let lastActedKey = null;
     let lastLoggedHand = 0;
     player.on("table:error", (e) => {
-      if (/докупка недоступна/i.test(e.message)) rebuyRejected = true;
-      else console.error("[Challenger] ошибка:", e.message);
+      if (e.code === "REBUY_TOURNAMENT_ELIMINATED") rebuyRejected = true;
+      else console.error("[Challenger] ошибка:", e.code);
     });
     player.on("table:state", (state) => {
       if (!state.isTournament) return;

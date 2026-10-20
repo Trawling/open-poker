@@ -1,6 +1,7 @@
 import type { TableConfig } from "@open-poker/engine";
 import { nanoid } from "nanoid";
 import type { Server } from "socket.io";
+import type { Lang } from "./names.js";
 import { resolveStakes } from "./stakes.js";
 import { TableRoom, type TableSnapshot } from "./tableRoom.js";
 import { TOURNAMENT_BLIND_LEVELS, TOURNAMENT_MAX_SEATS, TOURNAMENT_STARTING_STACK } from "./tournament.js";
@@ -51,9 +52,9 @@ export class RoomManager {
     return this.tables.get(tableId);
   }
 
-  createPrivateTable(stakesId?: string): TableRoom {
+  createPrivateTable(stakesId?: string, lang?: Lang): TableRoom {
     const id = nanoid(8);
-    const room = new TableRoom(id, buildCashConfig(id, stakesId), this.io, false);
+    const room = new TableRoom(id, buildCashConfig(id, stakesId), this.io, false, false, lang);
     this.tables.set(id, room);
     return room;
   }
@@ -64,14 +65,14 @@ export class RoomManager {
    * которые сами решают, когда начинать (и могут вручную добавить ботов
    * через уже существующую кнопку "+ Добавить бота", если кого-то не хватает).
    */
-  createPrivateTournament(): TableRoom {
+  createPrivateTournament(lang?: Lang): TableRoom {
     const id = nanoid(8);
-    const room = new TableRoom(id, buildTournamentConfig(id), this.io, false, true);
+    const room = new TableRoom(id, buildTournamentConfig(id), this.io, false, true, lang);
     this.tables.set(id, room);
     return room;
   }
 
-  findOrCreateQuickTable(stakesId?: string): TableRoom {
+  findOrCreateQuickTable(stakesId?: string, lang?: Lang): TableRoom {
     const stakes = resolveStakes(stakesId);
     for (const room of this.tables.values()) {
       if (
@@ -85,13 +86,13 @@ export class RoomManager {
       }
     }
     const id = `quick-${nanoid(6)}`;
-    const room = new TableRoom(id, buildCashConfig(id, stakesId), this.io, true);
+    const room = new TableRoom(id, buildCashConfig(id, stakesId), this.io, true, false, lang);
     this.tables.set(id, room);
     this.scheduleAutoFill(room, QUICK_PLAY_MIN_PLAYERS);
     return room;
   }
 
-  findOrCreateQuickTournament(): TableRoom {
+  findOrCreateQuickTournament(lang?: Lang): TableRoom {
     for (const room of this.tables.values()) {
       if (
         room.isPublic &&
@@ -104,7 +105,7 @@ export class RoomManager {
       }
     }
     const id = `tournament-${nanoid(6)}`;
-    const room = new TableRoom(id, buildTournamentConfig(id), this.io, true, true);
+    const room = new TableRoom(id, buildTournamentConfig(id), this.io, true, true, lang);
     this.tables.set(id, room);
     this.scheduleAutoFill(room, TOURNAMENT_MIN_PLAYERS);
     return room;

@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import { nanoid } from "nanoid";
 import { Server, type Socket } from "socket.io";
-import { generateGuestNickname } from "./names.js";
+import { generateGuestNickname, type Lang } from "./names.js";
 import { loadSnapshot, loadStats, saveSnapshot, saveStats } from "./persistence.js";
 import type { ClientToServerEvents, ServerToClientEvents, SocketData } from "./protocol.js";
 import { RoomManager } from "./roomManager.js";
@@ -61,26 +61,29 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, Record<string,
 
 const roomManager = new RoomManager(io);
 
-function sanitizeNickname(raw: string | undefined): string {
+function sanitizeNickname(raw: string | undefined, lang: Lang): string {
   const trimmed = (raw ?? "").trim().slice(0, 24);
-  return trimmed.length > 0 ? trimmed : generateGuestNickname();
+  return trimmed.length > 0 ? trimmed : generateGuestNickname(lang);
 }
 
 type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
 
 io.on("connection", (socket: AppSocket) => {
   const guestId = (socket.handshake.auth?.guestId as string | undefined) || nanoid(12);
-  const nickname = sanitizeNickname(socket.handshake.auth?.nickname as string | undefined);
+  // Только для автосгенерированных ников (гостя, ботов) — см. names.ts.
+  // Выбранный игроком ник передаётся как есть и никогда не переводится.
+  const lang: Lang = socket.handshake.auth?.lang === "en" ? "en" : "ru";
+  const nickname = sanitizeNickname(socket.handshake.auth?.nickname as string | undefined, lang);
   socket.data = { guestId, nickname, tableId: null };
 
   function joinRoom(tableId: string) {
     const room = roomManager.get(tableId);
     if (!room) {
-      socket.emit("table:error", { message: "Стол не найден. Возможно, он уже закрылся." });
+      socket.emit("table:error", { code: "TABLE_NOT_FOUND" });
       return;
     }
     if (!room.hasFreeSeat() && !room.table.seats.some((s) => s?.id === guestId)) {
-      socket.emit("table:error", { message: "За столом нет свободных мест." });
+      socket.emit("table:error", { code: "NO_FREE_SEAT" });
       return;
     }
     socket.data.tableId = tableId;
@@ -91,38 +94,38 @@ io.on("connection", (socket: AppSocket) => {
   }
 
   socket.on("table:quick-play", ({ nickname: nick, stakes } = {}) => {
-    if (nick) socket.data.nickname = sanitizeNickname(nick);
-    const room = roomManager.findOrCreateQuickTable(stakes);
+    if (nick) socket.data.nickname = sanitizeNickname(nick, lang);
+    const room = roomManager.findOrCreateQuickTable(stakes, lang);
     joinRoom(room.id);
   });
 
   socket.on("table:create", ({ nickname: nick, stakes } = {}) => {
-    if (nick) socket.data.nickname = sanitizeNickname(nick);
-    const room = roomManager.createPrivateTable(stakes);
+    if (nick) socket.data.nickname = sanitizeNickname(nick, lang);
+    const room = roomManager.createPrivateTable(stakes, lang);
     joinRoom(room.id);
   });
 
   socket.on("table:quick-tournament", ({ nickname: nick } = {}) => {
-    if (nick) socket.data.nickname = sanitizeNickname(nick);
-    const room = roomManager.findOrCreateQuickTournament();
+    if (nick) socket.data.nickname = sanitizeNickname(nick, lang);
+    const room = roomManager.findOrCreateQuickTournament(lang);
     joinRoom(room.id);
   });
 
   socket.on("table:create-tournament", ({ nickname: nick } = {}) => {
-    if (nick) socket.data.nickname = sanitizeNickname(nick);
-    const room = roomManager.createPrivateTournament();
+    if (nick) socket.data.nickname = sanitizeNickname(nick, lang);
+    const room = roomManager.createPrivateTournament(lang);
     joinRoom(room.id);
   });
 
   socket.on("table:join", ({ tableId, nickname: nick }) => {
-    if (nick) socket.data.nickname = sanitizeNickname(nick);
+    if (nick) socket.data.nickname = sanitizeNickname(nick, lang);
     joinRoom(tableId);
   });
 
   socket.on("table:action", (action) => {
     const room = socket.data.tableId ? roomManager.get(socket.data.tableId) : undefined;
     if (!room) {
-      socket.emit("table:error", { message: "Вы не за столом." });
+      socket.emit("table:error", { code: "NOT_AT_TABLE" });
       return;
     }
     room.applyHumanAction(guestId, action);
@@ -139,7 +142,7 @@ io.on("connection", (socket: AppSocket) => {
   socket.on("table:rebuy", () => {
     const room = socket.data.tableId ? roomManager.get(socket.data.tableId) : undefined;
     if (!room) {
-      socket.emit("table:error", { message: "Вы не за столом." });
+      socket.emit("table:error", { code: "NOT_AT_TABLE" });
       return;
     }
     room.rebuy(guestId);

@@ -1,5 +1,6 @@
 import { ArrowUpCircle, CheckCircle, Minus, Plus, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { ActionInput, LegalActions } from "../lib/protocol";
 
 export function ActionBar({
@@ -11,6 +12,7 @@ export function ActionBar({
   potSize: number;
   onAction: (action: ActionInput) => void;
 }) {
+  const { t } = useTranslation();
   const canAct = legalActions && (legalActions.canBet || legalActions.canRaise || legalActions.canCall || legalActions.canCheck || legalActions.canFold);
   const raiseFloor = legalActions ? (legalActions.canBet ? legalActions.minBet : legalActions.minRaiseTo) : 0;
   const raiseCeil = legalActions?.maxTo ?? 0;
@@ -24,7 +26,7 @@ export function ActionBar({
   if (!canAct || !legalActions) {
     return (
       <div className="action-bar action-bar--idle glass">
-        Ожидайте своего хода…
+        {t("action.waiting")}
       </div>
     );
   }
@@ -39,19 +41,19 @@ export function ActionBar({
           {legalActions.canFold && (
             <button className="action-btn action-btn--fold" onClick={() => onAction({ type: "fold" })}>
               <XCircle size={18} />
-              Fold
+              {t("action.fold")}
             </button>
           )}
           {legalActions.canCheck && (
             <button className="action-btn" onClick={() => onAction({ type: "check" })}>
               <CheckCircle size={18} />
-              Чек
+              {t("action.check")}
             </button>
           )}
           {legalActions.canCall && (
             <button className="action-btn action-btn--call" onClick={() => onAction({ type: "call" })}>
               <CheckCircle size={18} />
-              Колл {legalActions.callAmount}
+              {t("action.call", { amount: legalActions.callAmount })}
             </button>
           )}
         </div>
@@ -60,9 +62,9 @@ export function ActionBar({
       {(legalActions.canBet || legalActions.canRaise) && (
         <div className="bet-panel glass">
           <div className="bet-control">
-            <span className="bet-control__label">Сумма ставки</span>
+            <span className="bet-control__label">{t("action.betAmountLabel")}</span>
             <div className="bet-control__row">
-              <button className="stepper-btn" onClick={() => setAmount((v) => clamp(v - step))} aria-label="Меньше">
+              <button className="stepper-btn" onClick={() => setAmount((v) => clamp(v - step))} aria-label={t("action.less") ?? undefined}>
                 <Minus size={14} />
               </button>
               <input
@@ -72,7 +74,7 @@ export function ActionBar({
                 value={amount}
                 onChange={(e) => setAmount(clamp(Number(e.target.value)))}
               />
-              <button className="stepper-btn" onClick={() => setAmount((v) => clamp(v + step))} aria-label="Больше">
+              <button className="stepper-btn" onClick={() => setAmount((v) => clamp(v + step))} aria-label={t("action.more") ?? undefined}>
                 <Plus size={14} />
               </button>
               <div className="bet-control__amount">
@@ -86,17 +88,17 @@ export function ActionBar({
               </div>
             </div>
             <div className="bet-control__minmax">
-              <span>Min: {raiseFloor}</span>
-              <span>Max: {raiseCeil}</span>
+              <span>{t("action.min", { amount: raiseFloor })}</span>
+              <span>{t("action.max", { amount: raiseCeil })}</span>
             </div>
             <div className="action-bar__quick">
               {potSize > 0 && (
                 <button className="quick-chip" onClick={() => setAmount(clamp(potSize))}>
-                  Пот
+                  {t("action.pot")}
                 </button>
               )}
               <button className="quick-chip" onClick={() => setAmount(raiseCeil)}>
-                Олл-ин
+                {t("action.allIn")}
               </button>
               <button
                 className="action-btn action-btn--raise"
@@ -104,7 +106,7 @@ export function ActionBar({
                 style={{ marginLeft: "auto" }}
               >
                 <ArrowUpCircle size={18} />
-                {legalActions.canBet ? "Ставка" : "Raise"} {amount}
+                {t(legalActions.canBet ? "action.bet" : "action.raise", { amount })}
               </button>
             </div>
           </div>

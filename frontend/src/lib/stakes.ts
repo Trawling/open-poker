@@ -1,16 +1,17 @@
 // Зеркало backend/src/stakes.ts — держим в синхроне вручную, как и protocol.ts.
+// Названий уровней тут больше нет: они переводятся в компоненте через i18n
+// (ключи stakes.<id>, см. frontend/src/i18n) по smallBlind/bigBlind.
 export interface StakesLevel {
   id: string;
-  label: string;
   smallBlind: number;
   bigBlind: number;
   startingStack: number;
 }
 
 export const STAKES_LEVELS: StakesLevel[] = [
-  { id: "low", label: "Низкие (10/20)", smallBlind: 10, bigBlind: 20, startingStack: 1000 },
-  { id: "mid", label: "Средние (50/100)", smallBlind: 50, bigBlind: 100, startingStack: 5000 },
-  { id: "high", label: "Высокие (200/400)", smallBlind: 200, bigBlind: 400, startingStack: 20000 },
+  { id: "low", smallBlind: 10, bigBlind: 20, startingStack: 1000 },
+  { id: "mid", smallBlind: 50, bigBlind: 100, startingStack: 5000 },
+  { id: "high", smallBlind: 200, bigBlind: 400, startingStack: 20000 },
 ];
 
 export const DEFAULT_STAKES_ID = "low";

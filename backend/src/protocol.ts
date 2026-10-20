@@ -60,7 +60,13 @@ export interface ClientToServerEvents {
 export interface ServerToClientEvents {
   "table:joined": (payload: { tableId: string; playerId: string; seatIndex: number }) => void;
   "table:state": (payload: PersonalTableState) => void;
-  "table:error": (payload: { message: string }) => void;
+  /**
+   * `code` — машинно-читаемый ключ, по которому фронтенд ищет перевод
+   * (см. frontend/src/i18n, ключи errors.<code>); `params` — значения для
+   * подстановки (например, минимальная сумма ставки). Намеренно без
+   * готового текста — сервер не должен решать, на каком языке говорит клиент.
+   */
+  "table:error": (payload: { code: string; params?: Record<string, string | number> }) => void;
   /** Новое сообщение чата — рассылается сразу, не дожидаясь следующего table:state. */
   "table:chat": (payload: ChatMessage) => void;
 }

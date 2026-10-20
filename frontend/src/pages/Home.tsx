@@ -1,6 +1,8 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Brand } from "../components/Brand";
 import { IdentityPanel } from "../components/IdentityPanel";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { ServerSettings } from "../components/ServerSettings";
 import { StatsPanel } from "../components/StatsPanel";
 import { getNickname, setNickname } from "../lib/identity";
@@ -17,6 +19,7 @@ export function Home({
   onQuickTournament: (nickname: string) => void;
   onCreateTournament: (nickname: string) => void;
 }) {
+  const { t } = useTranslation();
   const [nickname, setNicknameInput] = useState(getNickname());
   const [stakes, setStakes] = useState(DEFAULT_STAKES_ID);
 
@@ -28,18 +31,17 @@ export function Home({
     <div className="home">
       <header className="home__topbar">
         <Brand />
+        <LanguageSwitcher />
       </header>
 
       <div className="home__body">
         <div className="home__card">
           <h1 className="home__title">Open Poker</h1>
-          <p className="home__subtitle">
-            Бесплатный покер без рекламы и без денег. Открытый код. Зашёл — и сразу играешь.
-          </p>
+          <p className="home__subtitle">{t("home.subtitle")}</p>
 
           <input
             className="home__nickname"
-            placeholder="Ваш ник (необязательно)"
+            placeholder={t("home.nicknamePlaceholder") ?? undefined}
             value={nickname}
             maxLength={24}
             onChange={(e) => setNicknameInput(e.target.value)}
@@ -47,7 +49,7 @@ export function Home({
           />
 
           <section className="home__section glass">
-            <h2 className="home__section-title">Кэш-игра</h2>
+            <h2 className="home__section-title">{t("home.cashGameTitle")}</h2>
             <div className="home__stakes">
               <div className="home__stakes-options">
                 {STAKES_LEVELS.map((level) => (
@@ -57,37 +59,35 @@ export function Home({
                     onClick={() => setStakes(level.id)}
                     type="button"
                   >
-                    {level.label}
+                    {t(`stakes.${level.id}`, { small: level.smallBlind, big: level.bigBlind })}
                   </button>
                 ))}
               </div>
             </div>
             <div className="home__actions">
               <button className="btn btn--primary btn--big" onClick={() => onQuickPlay(nickname, stakes)}>
-                Быстрая игра
+                {t("home.quickPlay")}
               </button>
               <button className="btn btn--ghost btn--big" onClick={() => onCreateTable(nickname, stakes)}>
-                Создать стол для друзей
+                {t("home.createTable")}
               </button>
             </div>
           </section>
 
           <section className="home__section glass">
-            <h2 className="home__section-title">🏆 Турнир</h2>
-            <p className="home__section-hint">Без докупки, блайнды растут — игра до последнего.</p>
+            <h2 className="home__section-title">{t("home.tournamentTitle")}</h2>
+            <p className="home__section-hint">{t("home.tournamentHint")}</p>
             <div className="home__actions">
               <button className="btn btn--ghost btn--big" onClick={() => onQuickTournament(nickname)}>
-                Быстрый турнир
+                {t("home.quickTournament")}
               </button>
               <button className="btn btn--ghost btn--big" onClick={() => onCreateTournament(nickname)}>
-                Турнир для друзей
+                {t("home.createTournament")}
               </button>
             </div>
           </section>
 
-          <p className="home__note">
-            Без регистрации. Фишки виртуальные и ничего не стоят — это просто игра.
-          </p>
+          <p className="home__note">{t("home.note")}</p>
 
           <div className="home__meta-row">
             <StatsPanel />
@@ -99,10 +99,10 @@ export function Home({
 
       <footer className="home__footer">
         <a href="https://github.com/Trawling/open-poker" target="_blank" rel="noreferrer">
-          Исходный код на GitHub
+          {t("home.sourceLink")}
         </a>
         <span>·</span>
-        <span>AGPL-3.0 · бесплатно и без рекламы навсегда</span>
+        <span>{t("home.footerTagline")}</span>
       </footer>
     </div>
   );
