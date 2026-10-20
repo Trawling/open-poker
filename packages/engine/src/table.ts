@@ -163,11 +163,20 @@ export class PokerTable {
     return out;
   }
 
+  /**
+   * Кто играет в раздаче, которая вот-вот начнётся. Вызывается ТОЛЬКО когда
+   * handInProgress === false (см. canStartHand()/startHand(), единственные
+   * вызовы) — то есть ровно в момент, когда временное ограничение sittingOut
+   * ("подключится со следующей раздачи", см. sitDown()) уже выполнено.
+   * Поэтому тут сознательно НЕ фильтруем по sittingOut: иначе игрок,
+   * подсевший во время чужой раздачи, навсегда остаётся снаружи — его
+   * sittingOut здесь же в startHand() переустанавливается в true, потому что
+   * участники для следующей раздачи считались ДО этого переустановления
+   * (реальный баг: друг, зашедший по ссылке в разгар раздачи, вечно видел
+   * "ожидание хода", так и не садясь за игру).
+   */
   private participatingSeats(): number[] {
-    return this.occupiedSeats().filter((i) => {
-      const s = this.seats[i]!;
-      return !s.sittingOut && s.stack > 0;
-    });
+    return this.occupiedSeats().filter((i) => this.seats[i]!.stack > 0);
   }
 
   canStartHand(): boolean {

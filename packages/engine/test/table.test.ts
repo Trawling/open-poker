@@ -229,6 +229,31 @@ describe("PokerTable — героям по-честному", () => {
     },
   );
 
+  it(
+    "игрок, подсевший во время чужой раздачи, участвует уже со следующей — " +
+      "реальный баг: друг, зашедший по ссылке в разгар раздачи, вечно видел " +
+      "'ожидание хода' и не мог сыграть ни одной раздачи, потому что " +
+      "participatingSeats() при расчёте состава следующей раздачи сам же " +
+      "фильтровал по sittingOut, который ещё не успел сброситься",
+    () => {
+      const table = new PokerTable(makeConfig({ maxSeats: 3 }));
+      table.sitDown({ id: "a", nickname: "A" });
+      table.sitDown({ id: "b", nickname: "B" });
+      table.startHand(); // раздача №1: a+b
+
+      const c = table.sitDown({ id: "c", nickname: "C" }); // друг подсел по ссылке
+      expect(table.seats[c]!.sittingOut).toBe(true); // верно: ждёт следующую раздачу
+
+      const dealerId = table.seats[table.dealerSeatIndex!]!.id;
+      table.applyAction(dealerId, { type: "fold" }); // раздача №1 завершена
+      expect(table.handInProgress).toBe(false);
+
+      table.startHand(); // раздача №2 — c должен теперь участвовать
+      expect(table.seats[c]!.sittingOut).toBe(false);
+      expect(table.seats[c]!.holeCards).toHaveLength(2);
+    },
+  );
+
   it("forceEndHand аварийно снимает флаг раздачи — защита от зависания стола", () => {
     const table = new PokerTable(makeConfig());
     table.sitDown({ id: "a", nickname: "A" });
