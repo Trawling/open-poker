@@ -293,6 +293,43 @@ button {
   align-self: center;
 }
 
+.server-settings__toggle {
+  align-self: center;
+}
+
+.server-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.server-settings__title {
+  margin: 0;
+  font-size: 14px;
+}
+
+.server-settings__hint {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.server-settings__input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.server-settings__actions {
+  display: flex;
+  gap: 8px;
+}
+
 .identity-panel {
   display: flex;
   flex-direction: column;

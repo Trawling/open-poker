@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Только для debug-сборок: разрешает обычный http:// (cleartext) для
+  локальной разработки/тестирования против self-hosted сервера на
+  домашней сети (например http://10.0.2.2:4000 с эмулятора или
+  http://192.168.x.x:4000 с телефона в той же Wi-Fi сети).
+  Релизная сборка (которую видит F-Droid) этого не наследует — там
+  обязателен HTTPS, как и положено для self-hosted сервера в проде.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:usesCleartextTraffic="true" />
+</manifest>

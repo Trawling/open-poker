@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Brand } from "../components/Brand";
 import { IdentityPanel } from "../components/IdentityPanel";
+import { ServerSettings } from "../components/ServerSettings";
 import { StatsPanel } from "../components/StatsPanel";
 import { getNickname, setNickname } from "../lib/identity";
 import { DEFAULT_STAKES_ID, STAKES_LEVELS } from "../lib/stakes";
@@ -92,6 +93,7 @@ export function Home({
             <StatsPanel />
             <IdentityPanel />
           </div>
+          <ServerSettings />
         </div>
       </div>
 

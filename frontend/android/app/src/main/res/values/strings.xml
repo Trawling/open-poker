@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Open Poker</string>
+    <string name="title_activity_main">Open Poker</string>
+    <string name="package_name">io.github.trawling.openpoker</string>
+    <string name="custom_url_scheme">io.github.trawling.openpoker</string>
+</resources>

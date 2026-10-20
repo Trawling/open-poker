@@ -25,6 +25,8 @@ frontend/           — веб-клиент на React + Vite + TypeScript
   src/components/        — стол (сукно), место игрока, карта, панель действий
   src/styles.css         — минималистичная тёмная тема
   Dockerfile, nginx.conf — сборка образа frontend + прокси /socket.io/ на backend
+  capacitor.config.ts, android/ — нативная Android-обёртка (для F-Droid),
+    см. docs/05-android.md
 
 docker-compose.yml  — поднимает backend + frontend вместе, см. docs/04-deploy.md
 

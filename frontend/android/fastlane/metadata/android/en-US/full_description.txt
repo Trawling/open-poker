@@ -1,0 +1,17 @@
+Open Poker is a free, open-source No-Limit Texas Hold'em app in the spirit
+of Lichess: no ads, no tracking, no real money — and a promise that it will
+stay that way forever.
+
+Features:
+• Quick play against other players or bots — no account needed
+• Cash games at several stakes levels, and no-rebuy Sit & Go tournaments
+  with rising blinds
+• Provably fair deck shuffling — the algorithm is open and verifiable
+• Table chat, hand history, live stats
+• Self-hosted: the app isn't tied to any single server — point it at your
+  own (see the "⚙️ Server address" setting on the home screen) or deploy
+  your own in minutes using the instructions in the repository
+
+This is NOT a gambling app and involves no real-money wagering — chips are
+virtual and worthless outside the game. Source code is fully open under the
+AGPL-3.0 license: https://github.com/Trawling/open-poker

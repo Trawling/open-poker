@@ -1,0 +1,2 @@
+Первый релиз: быстрая игра, кэш-столы, турниры Sit & Go, чат, статистика.
+First release: quick play, cash tables, Sit & Go tournaments, chat, stats.

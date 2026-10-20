@@ -10,10 +10,31 @@ import { RoomManager } from "./roomManager.js";
 import { statsStore } from "./stats.js";
 
 const PORT = Number(process.env.PORT ?? 4000);
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? "http://localhost:5173";
+
+/**
+ * FRONTEND_ORIGIN может быть списком через запятую — self-hosted сервер
+ * обычно обслуживает сразу и веб (свой домен), и нативное Android-приложение
+ * (см. docs/05-android.md). У нативного приложения origin фиксированный
+ * (Capacitor отдаёт собственные ассеты с http://localhost или
+ * https://localhost в зависимости от настройки androidScheme) и не зависит
+ * от домена вашего сервера — поэтому эти два origin'а разрешены всегда,
+ * без дополнительной настройки, а FRONTEND_ORIGIN нужен только для вашего
+ * веб-домена.
+ */
+const NATIVE_APP_ORIGINS = ["http://localhost", "https://localhost", "capacitor://localhost"];
+const configuredOrigins = (process.env.FRONTEND_ORIGIN ?? "http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+const allowedOrigins = new Set([...configuredOrigins, ...NATIVE_APP_ORIGINS]);
+
+function corsOriginCheck(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+  if (!origin || allowedOrigins.has(origin)) callback(null, true);
+  else callback(new Error(`Origin не разрешён: ${origin}`));
+}
 
 const app = express();
-app.use(cors({ origin: FRONTEND_ORIGIN }));
+app.use(cors({ origin: corsOriginCheck }));
 app.get("/health", (_req, res) => {
   res.json({ ok: true, tables: roomManager.tableCount });
 });
@@ -35,7 +56,7 @@ app.get("/api/stats/:guestId", (req, res) => {
 const httpServer = createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>(
   httpServer,
-  { cors: { origin: FRONTEND_ORIGIN, methods: ["GET", "POST"] } },
+  { cors: { origin: corsOriginCheck, methods: ["GET", "POST"] } },
 );
 
 const roomManager = new RoomManager(io);

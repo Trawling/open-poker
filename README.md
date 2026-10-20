@@ -62,6 +62,16 @@ docker compose up --build
 
 Подробности, переменные окружения и настройка домена с HTTPS — `docs/04-deploy.md`.
 
+## Android-приложение
+
+Нативная Android-обёртка (Capacitor, self-hosted — адрес сервера задаётся
+в самом приложении) реально собрана и проверена на эмуляторе, готовится
+к публикации в F-Droid. Подробности и чек-лист — `docs/05-android.md`.
+
+```bash
+cd frontend && npm run android:build
+```
+
 ## Контрибьютинг
 
 Хотите помочь — см. `CONTRIBUTING.md`: как запустить, что неизменно
