@@ -20,7 +20,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Capacitor CLI требует Node >= 22 (основной CI на 20 — там
+          # Capacitor не используется, несовпадение версий между
+          # воркфлоу не проблема).
+          node-version: 22
           cache: npm
 
       - uses: actions/setup-java@v4
