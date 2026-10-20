@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/Trawling/open-poker/actions/workflows/ci.yml/badge.svg)](https://github.com/Trawling/open-poker/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![Android APK](https://img.shields.io/github/v/release/Trawling/open-poker?label=Android%20APK&logo=android)](https://github.com/Trawling/open-poker/releases/latest)
 
 Идея: бесплатный, без рекламы, open-source сервис для игры в покер (Texas Hold'em в первую очередь),
 максимально минималистичный и понятный — зашёл и сразу играешь, без регистрации, доната и шума.
@@ -64,9 +65,18 @@ docker compose up --build
 
 ## Android-приложение
 
+**[⬇️ Скачать APK](https://github.com/Trawling/open-poker/releases/latest)**
+со страницы [Releases](https://github.com/Trawling/open-poker/releases) —
+собирается и подписывается автоматически в CI
+(`.github/workflows/android-release.yml`) при каждом релизном теге.
+
 Нативная Android-обёртка (Capacitor, self-hosted — адрес сервера задаётся
-в самом приложении) реально собрана и проверена на эмуляторе, готовится
-к публикации в F-Droid. Подробности и чек-лист — `docs/05-android.md`.
+в самом приложении) реально собрана и проверена на эмуляторе: установлена,
+запущена, подключена к реальному серверу по Socket.IO. Параллельно
+готовится к публикации в F-Droid. Подробности и чек-лист —
+`docs/05-android.md`.
+
+Собрать локально:
 
 ```bash
 cd frontend && npm run android:build
