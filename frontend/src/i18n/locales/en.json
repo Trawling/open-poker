@@ -25,7 +25,7 @@
     "blinds": "blinds {{small}}/{{big}}",
     "yourStack": "Your stack",
     "soundTitle": "Sound",
-    "copyLinkTitle": "Copy table link",
+    "invitePlayerTitle": "Add player",
     "addBotTitle": "Add a bot",
     "timeLeft": "{{seconds}}s left to act",
     "tournamentFinished": "🏆 Tournament finished! Winner: <strong>{{nickname}}</strong>",
@@ -93,6 +93,13 @@
     "quads": "Four of a kind",
     "straight_flush": "Straight flush",
     "unknown": "Unknown"
+  },
+  "invite": {
+    "title": "Add player",
+    "hint": "Send the link to a friend, or let them scan the QR code with their phone's camera.",
+    "closeAria": "Close",
+    "qrAlt": "QR code with the table link",
+    "copyAria": "Copy link"
   },
   "chat": {
     "title": "Table chat",

@@ -1201,6 +1201,80 @@ button {
   border-color: var(--accent);
 }
 
+/* ---------- Модалка приглашения (ссылка + QR) ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  animation: chat-message-in 0.15s ease-out;
+}
+
+.modal {
+  width: min(320px, calc(100vw - 32px));
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  animation: chat-slide-in 0.2s ease-out;
+}
+
+.modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.modal__header h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.modal__hint {
+  color: var(--text-dim);
+  font-size: 12px;
+  margin: 0 0 16px;
+}
+
+.invite-qr {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  background: #fff;
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+}
+
+.invite-qr img {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+}
+
+.invite-link-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.invite-link-row__url {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-fill);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
 @media (max-width: 560px) {
   .chat-panel {
     right: 10px;

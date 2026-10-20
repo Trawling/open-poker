@@ -1,10 +1,11 @@
-import { Link2, LogOut, MessageCircle, UserPlus, Volume2, VolumeX } from "lucide-react";
+import { Bot, LogOut, MessageCircle, UserPlus, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { ActionBar } from "../components/ActionBar";
 import { ChatPanel } from "../components/ChatPanel";
 import { ChipIcon } from "../components/ChipIcon";
 import { HandHistory } from "../components/HandHistory";
+import { InviteModal } from "../components/InviteModal";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { PokerTable } from "../components/PokerTable";
 import { getNickname } from "../lib/identity";
@@ -34,6 +35,7 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatOpen, setChatOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const startedRef = useRef(false);
   const wasYourTurnRef = useRef(false);
   const lastAnnouncedHandRef = useRef<number | null>(null);
@@ -134,10 +136,6 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
     getSocket().emit("table:rebuy");
   }
 
-  function handleCopyLink() {
-    navigator.clipboard?.writeText(window.location.href).catch(() => undefined);
-  }
-
   function handleToggleChat() {
     setChatOpen((v) => !v);
     setUnreadCount(0);
@@ -185,11 +183,11 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
           <button className="btn btn--ghost btn--icon" onClick={handleToggleSound} title={t("table.soundTitle") ?? undefined}>
             {soundOn ? <Volume2 size={16} /> : <VolumeX size={16} />}
           </button>
-          <button className="btn btn--ghost btn--icon" onClick={handleCopyLink} title={t("table.copyLinkTitle") ?? undefined}>
-            <Link2 size={16} />
+          <button className="btn btn--ghost btn--icon" onClick={() => setInviteOpen(true)} title={t("table.invitePlayerTitle") ?? undefined}>
+            <UserPlus size={16} />
           </button>
           <button className="btn btn--ghost btn--icon" onClick={handleAddBot} title={t("table.addBotTitle") ?? undefined}>
-            <UserPlus size={16} />
+            <Bot size={16} />
           </button>
           <button
             className="btn btn--ghost btn--icon icon-badge"
@@ -254,6 +252,8 @@ export function Table({ intent, onLeave }: { intent: TableIntent; onLeave: () =>
           onSend={handleSendChat}
         />
       )}
+
+      {inviteOpen && <InviteModal url={window.location.href} onClose={() => setInviteOpen(false)} />}
     </div>
   );
 }

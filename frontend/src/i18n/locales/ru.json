@@ -25,7 +25,7 @@
     "blinds": "блайнды {{small}}/{{big}}",
     "yourStack": "Ваш стек",
     "soundTitle": "Звук",
-    "copyLinkTitle": "Скопировать ссылку на стол",
+    "invitePlayerTitle": "Добавить игрока",
     "addBotTitle": "Добавить бота",
     "timeLeft": "Осталось {{seconds}} с на ход",
     "tournamentFinished": "🏆 Турнир завершён! Победитель: <strong>{{nickname}}</strong>",
@@ -93,6 +93,13 @@
     "quads": "Каре",
     "straight_flush": "Стрит-флеш",
     "unknown": "Неизвестно"
+  },
+  "invite": {
+    "title": "Добавить игрока",
+    "hint": "Отправьте ссылку другу или дайте ему отсканировать QR-код камерой телефона.",
+    "closeAria": "Закрыть",
+    "qrAlt": "QR-код со ссылкой на стол",
+    "copyAria": "Копировать ссылку"
   },
   "chat": {
     "title": "Чат стола",
