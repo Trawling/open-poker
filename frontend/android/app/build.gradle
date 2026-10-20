@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+// Подпись релизной сборки — для GitHub Releases (см. .github/workflows/android-release.yml
+// и docs/05-android.md). Путь/пароли берутся из переменных окружения, а не
+// коммитятся: в CI это секреты репозитория, локально — не нужны вовсе
+// (локальная release-сборка без них просто останется неподписанной, что
+// нормально для ручной проверки). Это ОТДЕЛЬНЫЙ ключ от того, которым в
+// итоге подпишет сборку сам F-Droid при публикации там — два разных канала
+// распространения, два разных ключа, это нормально и ожидаемо.
+def releaseKeystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+def hasReleaseSigning = releaseKeystorePath != null && file(releaseKeystorePath).exists()
+
 android {
     namespace = "io.github.trawling.openpoker"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,10 +26,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(releaseKeystorePath)
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }

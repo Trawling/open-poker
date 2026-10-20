@@ -1,0 +1,94 @@
+name: Android Release
+
+# Срабатывает на тег вида v1.0.0 — собирает подписанный release-APK и
+# публикует его в GitHub Releases, чтобы приложение можно было скачать
+# напрямую, без Google Play (параллельно с подготовкой к публикации в
+# F-Droid — см. docs/05-android.md). Можно запустить и вручную
+# (workflow_dispatch) для проверки без создания тега.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Установка Android SDK (command-line tools, platform 36, build-tools 35)
+        uses: android-actions/setup-android@v3
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Сборка engine и фронтенда
+        run: |
+          npm run build -w packages/engine
+          npm run build -w frontend
+
+      - name: Синхронизация Capacitor (копирует dist/ в android/)
+        working-directory: frontend
+        run: npx cap sync android
+
+      - name: Восстановление ключа подписи из секрета
+        working-directory: frontend/android
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+
+      - name: Сборка подписанного release-APK
+        working-directory: frontend/android
+        env:
+          ANDROID_KEYSTORE_PATH: release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Удаление ключа из рабочей директории
+        if: always()
+        working-directory: frontend/android
+        run: rm -f release.keystore
+
+      - name: Переименование APK с версией из тега
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          mkdir -p dist-apk
+          cp frontend/android/app/build/outputs/apk/release/app-release.apk \
+            "dist-apk/open-poker-${{ github.ref_name }}.apk"
+
+      - name: Загрузка как build-артефакт (для workflow_dispatch без тега)
+        uses: actions/upload-artifact@v4
+        with:
+          name: open-poker-apk
+          path: frontend/android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 14
+
+      - name: Публикация в GitHub Releases
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-apk/*.apk
+          generate_release_notes: true
+          body: |
+            Android APK для Open Poker — self-hosted, без Google Play.
+
+            ⚠️ Установка потребует разрешить «неизвестные источники» в
+            настройках Android — это ожидаемо для APK вне магазинов
+            приложений (в том числе и для F-Droid-версии, когда она
+            появится).
+
+            Приложение не привязано к конкретному серверу — адрес своего
+            сервера задаётся в настройках «⚙️ Адрес сервера» после
+            установки (или поднимите свой, см. docs/04-deploy.md).
