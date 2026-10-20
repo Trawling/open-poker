@@ -28,8 +28,15 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Установка Android SDK (command-line tools, platform 36, build-tools 35)
-        uses: android-actions/setup-android@v3
+      # ubuntu-latest уже поставляется с Android SDK (ANDROID_HOME задан
+      # заранее) — просто доустанавливаем нужные платформу/build-tools и
+      # принимаем лицензии. Сторонний action android-actions/setup-android
+      # на момент написания ломается на устаревшем пакете 'tools', поэтому
+      # обходимся напрямую sdkmanager-ом из уже установленного SDK.
+      - name: Доустановка нужных компонентов Android SDK
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" "build-tools;35.0.0"
 
       - name: npm ci
         run: npm ci
