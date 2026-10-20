@@ -176,4 +176,69 @@ describe("PokerTable — героям по-честному", () => {
 
     expect(table.activePlayerCount()).toBe(2);
   });
+
+  it(
+    "startHand() может СИНХРОННО доиграть всю раздачу до вскрытия, если блайнды " +
+      "сразу загоняют почти всех в ва-банк — вызывающий код не должен " +
+      "предполагать, что после startHand() обязательно кто-то ходит " +
+      "(реальный баг: TableRoom.tryStartHand() предполагал это и вызывал " +
+      "scheduleNextActor() вместо единого afterAction(), из-за чего " +
+      "следующая раздача никогда не планировалась — турнир зависал навсегда)",
+    () => {
+      const table = new PokerTable(makeConfig({ maxSeats: 3, smallBlind: 10, bigBlind: 20 }));
+      // Первая раздача: дилером становится первый занявший место (seat 0),
+      // поэтому SB/BB достаются seat 1 и seat 2 — именно им урезаем стек.
+      table.sitDown({ id: "big-stack", nickname: "Big" });
+      table.sitDown({ id: "short-sb", nickname: "SB" });
+      table.sitDown({ id: "short-bb", nickname: "BB" });
+      // Оба блайнда настолько короткие, что уходят в ва-банк прямо на посте
+      // блайнда — действовать может только дилер (максимум 1 игрок).
+      table.seats[1]!.stack = 5;
+      table.seats[2]!.stack = 15;
+      const chipsBefore = totalChips(table);
+
+      table.startHand();
+
+      expect(table.handInProgress).toBe(false);
+      expect(table.street).toBe("showdown");
+      expect(table.winners).not.toBeNull();
+      expect(totalChips(table)).toBe(chipsBefore);
+    },
+  );
+
+  it(
+    "startHand обнуляет contributedTotal даже у отсидевшихся/выбывших мест — " +
+      "иначе старая ставка может по ошибке попасть под возврат неуравненной " +
+      "части в следующей раздаче, игрок получит чужие фишки 'из ниоткуда' и " +
+      "навсегда застрянет в sittingOut (реальный баг, зависавший турниры в CI)",
+    () => {
+      const table = new PokerTable(makeConfig({ maxSeats: 3 }));
+      table.sitDown({ id: "a", nickname: "A" });
+      table.sitDown({ id: "b", nickname: "B" });
+      table.sitDown({ id: "c", nickname: "C" });
+      // Симулируем игрока, который только что выбыл (стек 0), но у которого
+      // остался "хвост" от ставки в прошлой раздаче, где он ходил ва-банк.
+      table.seats[0]!.stack = 0;
+      table.seats[0]!.sittingOut = false;
+      table.seats[0]!.contributedTotal = 940;
+
+      table.startHand();
+
+      expect(table.seats[0]!.sittingOut).toBe(true); // верно исключён — стек 0
+      expect(table.seats[0]!.contributedTotal).toBe(0); // но старая ставка обнулена
+    },
+  );
+
+  it("forceEndHand аварийно снимает флаг раздачи — защита от зависания стола", () => {
+    const table = new PokerTable(makeConfig());
+    table.sitDown({ id: "a", nickname: "A" });
+    table.sitDown({ id: "b", nickname: "B" });
+    table.startHand();
+
+    expect(table.handInProgress).toBe(true);
+    table.forceEndHand();
+
+    expect(table.handInProgress).toBe(false);
+    expect(table.actingSeatIndex).toBeNull();
+  });
 });

@@ -84,6 +84,21 @@ export class TableRoom {
     return this.table.findFreeSeat() !== null;
   }
 
+  /**
+   * Турнир считается уже "начавшимся", как только сыграна хотя бы одна
+   * раздача — даже если формально остаются пустые места (maxSeats у
+   * турнирного стола больше минимума для старта, чтобы в приватном
+   * турнире друзья могли подсаживаться до его начала). Без этой проверки
+   * подбор "быстрого турнира" мог бы годами переиспользовать один и тот
+   * же стол, подсаживая новых игроков прямо в разгар чужого турнира со
+   * свежим стеком — это ломает инвариант "один закрытый состав игроков
+   * до победителя" и было реальной причиной зависания турнирного теста
+   * в CI (см. историю коммитов).
+   */
+  hasTournamentStarted(): boolean {
+    return this.table.handNumber > 0;
+  }
+
   getOrAddHuman(playerId: string, nickname: string, socketId: string): number {
     const existing = this.connections.get(playerId);
     if (existing) {
@@ -190,8 +205,18 @@ export class TableRoom {
       this.table.setBlinds(level.smallBlind, level.bigBlind);
     }
     this.table.startHand();
-    this.broadcast();
-    this.scheduleNextActor();
+    // НЕ просто broadcast()+scheduleNextActor(): startHand() сам может
+    // мгновенно и полностью доиграть раздачу синхронно (если блайнды сразу
+    // загоняют кого-то в ва-банк и действовать может от силы 1 игрок —
+    // см. PokerTable.maybeFastForwardAllIns()), и тогда handInProgress уже
+    // false ещё ДО того, как мы дошли до этой строки. scheduleNextActor()
+    // в таком случае ничего не делает (никто не ходит — раздача же уже
+    // кончилась), и scheduleAutoStart() для следующей раздачи никогда не
+    // вызывается — стол зависает навсегда с показанным клиентам финальным
+    // состоянием, но без дальнейшего прогресса (настоящая находка из CI,
+    // см. историю коммитов). Единая точка afterAction() уже умеет корректно
+    // обработать оба случая.
+    this.afterAction();
   }
 
   scheduleAutoStart(): void {
@@ -219,21 +244,50 @@ export class TableRoom {
    * таймеру): сначала фиксируем историю (если раздача завершилась),
    * потом рассылаем состояние — иначе клиенты получают события в
    * неверном порядке (например, победителей без свежей записи в истории).
+   *
+   * Каждый шаг обёрнут отдельно: если где-то внутри бросится непредвиденное
+   * исключение (найдена реальная причина зависания стола в CI — см. историю
+   * коммитов), это не должно оставить раздачу/турнир замороженными навсегда
+   * без единого лога. Рассылка состояния и планирование следующего шага
+   * гарантированы в любом случае — это важнее, чем временно пропущенная
+   * запись истории или статистики.
    */
   private afterAction(): void {
-    if (!this.table.handInProgress) {
-      this.recordHandHistory();
-      this.processPendingLeaves();
-      if (this.isTournament && this.checkTournamentFinished()) {
+    try {
+      if (!this.table.handInProgress) {
+        this.safeStep("recordHandHistory", () => this.recordHandHistory());
+        this.safeStep("processPendingLeaves", () => this.processPendingLeaves());
+        const tournamentJustFinished = this.isTournament
+          ? this.safeStep("checkTournamentFinished", () => this.checkTournamentFinished()) ?? false
+          : false;
         this.broadcast();
+        if (!tournamentJustFinished) this.scheduleAutoStart();
         return;
       }
       this.broadcast();
-      this.scheduleAutoStart();
-      return;
+      this.scheduleNextActor();
+    } catch (err) {
+      // Последний рубеж: что бы ни случилось выше, стол не должен повиснуть
+      // навсегда. Принудительно завершаем раздачу и пробуем восстановиться.
+      console.error(`[TableRoom ${this.id}] непредвиденная ошибка в afterAction, аварийное восстановление:`, err);
+      try {
+        this.table.forceEndHand();
+        this.broadcast();
+        this.scheduleAutoStart();
+      } catch (err2) {
+        console.error(`[TableRoom ${this.id}] аварийное восстановление тоже не удалось:`, err2);
+      }
     }
-    this.broadcast();
-    this.scheduleNextActor();
+  }
+
+  /** Выполняет шаг восстановления с логированием ошибки вместо падения всего afterAction. */
+  private safeStep<T>(label: string, fn: () => T): T | undefined {
+    try {
+      return fn();
+    } catch (err) {
+      console.error(`[TableRoom ${this.id}] ошибка на шаге "${label}":`, err);
+      return undefined;
+    }
   }
 
   /** Возвращает true, если турнир только что завершился (остался один игрок с фишками). */
@@ -296,11 +350,30 @@ export class TableRoom {
   private scheduleNextActor(): void {
     this.clearTimers();
     const seatIndex = this.table.actingSeatIndex;
-    if (seatIndex === null) return;
+    if (seatIndex === null) {
+      if (this.table.handInProgress) {
+        // Не должно происходить в норме: если раздача идёт, кто-то обязан
+        // ходить. Если всё же случилось (непредвиденная ошибка движка,
+        // например посреди вскрытия) — не оставляем стол висеть навсегда,
+        // а принудительно завершаем раздачу и планируем следующую.
+        console.error(
+          `[TableRoom ${this.id}] handInProgress=true, но actingSeatIndex=null ` +
+            `(street=${this.table.street}, hand=${this.table.handNumber}) — принудительное восстановление`,
+        );
+        this.table.forceEndHand();
+        this.afterAction();
+      }
+      return;
+    }
     const seat = this.table.seats[seatIndex];
     if (!seat) return;
     const conn = this.connections.get(seat.id);
-    if (!conn) return;
+    if (!conn) {
+      console.error(
+        `[TableRoom ${this.id}] за местом ${seatIndex} нет записи о соединении (id=${seat.id}) — пропускаем ход`,
+      );
+      return;
+    }
 
     if (conn.isBot) {
       const delay = BOT_MIN_DELAY_MS + Math.random() * (BOT_MAX_DELAY_MS - BOT_MIN_DELAY_MS);
@@ -319,22 +392,33 @@ export class TableRoom {
       const fallback: ActionInput = legal.canCheck ? { type: "check" } : { type: "fold" };
       try {
         this.table.applyAction(seat.id, fallback);
-      } catch {
-        // ход уже невозможен — раздача продвинулась иначе, просто игнорируем
+      } catch (err) {
+        console.error(`[TableRoom ${this.id}] ошибка автодействия по таймеру хода:`, err);
       }
       this.afterAction();
     }, this.table.config.turnTimeMs);
   }
 
   private runBotTurn(playerId: string): void {
-    const action = decideBotAction(this.table, playerId);
+    let action: ActionInput;
+    try {
+      // decideBotAction раньше вызывался вне try/catch — если эвристика бота
+      // (эквити/пот-оддсы) бросает исключение на каком-то крайнем случае
+      // стола, ход бота никогда не применялся и afterAction() даже не
+      // вызывался, из-за чего стол мог зависнуть навсегда без единого лога.
+      action = decideBotAction(this.table, playerId);
+    } catch (err) {
+      console.error(`[TableRoom ${this.id}] ошибка принятия решения ботом (${playerId}), fallback на fold:`, err);
+      action = { type: "fold" };
+    }
     try {
       this.table.applyAction(playerId, action);
-    } catch {
+    } catch (err) {
+      console.error(`[TableRoom ${this.id}] ошибка хода бота (${playerId}), пробуем fold:`, err);
       try {
         this.table.applyAction(playerId, { type: "fold" });
-      } catch {
-        // раздача уже закрылась иначе — ничего не делаем
+      } catch (err2) {
+        console.error(`[TableRoom ${this.id}] fold тоже не прошёл:`, err2);
       }
     }
     this.afterAction();

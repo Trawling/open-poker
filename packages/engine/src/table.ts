@@ -197,14 +197,21 @@ export class PokerTable {
     const participants = this.participatingSeats();
     for (const i of this.occupiedSeats()) {
       const s = this.seats[i]!;
+      // Сбрасываем состояние прошлой раздачи ВСЕМ занятым местам, не только
+      // участникам — иначе у отсидевшегося/выбывшего игрока остаётся старый
+      // contributedTotal, который `goToShowdown()` может по ошибке принять
+      // за ставку текущей раздачи при возврате неуравненного остатка (см.
+      // находку про "зависший стол" в истории коммитов: чужому игроку
+      // начислялись чужие фишки, он застревал в sittingOut=true навсегда,
+      // и турнир переставал запускать новые раздачи).
+      s.folded = false;
+      s.allIn = false;
+      s.contributedTotal = 0;
+      s.contributedStreet = 0;
+      s.holeCards = [];
+      s.lastAction = undefined;
+      s.revealedHoleCards = undefined;
       if (participants.includes(i)) {
-        s.folded = false;
-        s.allIn = false;
-        s.contributedTotal = 0;
-        s.contributedStreet = 0;
-        s.holeCards = [];
-        s.lastAction = undefined;
-        s.revealedHoleCards = undefined;
         s.sittingOut = false;
       } else {
         s.sittingOut = true;
@@ -553,8 +560,11 @@ export class PokerTable {
     const contestants = this.occupiedSeats().filter((i) => this.notFolded(i));
 
     // Возврат неуравненной части ставки, если верхний взнос никто не смог покрыть.
+    // Важно: только среди мест, которые НЕ отсиживают эту раздачу — иначе
+    // отсидевшийся игрок со старым (уже должным быть обнулённым) contributedTotal
+    // мог бы по ошибке получить чужой возврат (см. комментарий в startHand()).
     const totals = this.occupiedSeats()
-      .filter((i) => this.seats[i]!.contributedTotal > 0)
+      .filter((i) => !this.seats[i]!.sittingOut && this.seats[i]!.contributedTotal > 0)
       .map((i) => ({ i, total: this.seats[i]!.contributedTotal }));
     if (totals.length >= 1) {
       const topTotal = Math.max(...totals.map((t) => t.total));
@@ -645,6 +655,18 @@ export class PokerTable {
 
   private revealServerSeed() {
     this.revealedServerSeed = this.serverSeed;
+  }
+
+  /**
+   * Аварийный выход на случай, если где-то в середине вскрытия произошла
+   * непредвиденная ошибка и `handInProgress` не был сброшен штатно —
+   * без этого стол завис бы навсегда (никто не ходит, новая раздача не
+   * стартует). Это не "исправление" самой ошибки, а защита от зависания;
+   * используется только backend/src/tableRoom.ts как последний рубеж.
+   */
+  forceEndHand(): void {
+    this.toActOrder = [];
+    this.handInProgress = false;
   }
 
   // ---------------------------------------------------------------------

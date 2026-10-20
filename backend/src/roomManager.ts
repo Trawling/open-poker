@@ -93,7 +93,13 @@ export class RoomManager {
 
   findOrCreateQuickTournament(): TableRoom {
     for (const room of this.tables.values()) {
-      if (room.isPublic && room.isTournament && room.hasFreeSeat() && !room.table.handInProgress) {
+      if (
+        room.isPublic &&
+        room.isTournament &&
+        room.hasFreeSeat() &&
+        !room.table.handInProgress &&
+        !room.hasTournamentStarted()
+      ) {
         return room;
       }
     }
